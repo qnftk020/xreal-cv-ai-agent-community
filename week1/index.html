@@ -209,15 +209,35 @@
 .nextbox p{margin:0}
 @media (max-width:640px){.nextbox{grid-template-columns:1fr}}
 
-/* ---------- 페이지 넘김 ---------- */
-body.paged{padding-bottom:96px}
-.paged main > section{display:none;min-height:calc(100vh - 210px)}
-.paged main > section.cur{display:block;animation:pgin .5s cubic-bezier(.2,.7,.2,1)}
-.paged main > section.cur.back{animation-name:pgback}
+/* ---------- 슬라이드: 한 화면에 한 장 ---------- */
+body.paged{padding-bottom:84px}
+.slide{display:none}
+.slide.cur{display:block;animation:pgin .45s cubic-bezier(.2,.7,.2,1)}
+.slide.cur.back{animation-name:pgback}
 @keyframes pgin{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
 @keyframes pgback{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
-.paged .sec{padding-top:48px}
-.paged .foot{margin-top:40px}
+.paged .sec{padding:0}
+.paged .slide{padding:28px 0 24px}
+.paged .slide > .hero{padding:0}
+.paged .demo:first-child,.paged .slide > .tscroll:first-child .tbl,.paged .slide > .acc:first-child{margin-top:0}
+.paged .foot{display:none}
+.cont{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:13px;font-weight:700;color:var(--sub)}
+.cont .tag{min-width:0;padding:2px 12px}
+/* 넓은 화면: 스크롤 없이 화면에 맞춘다 */
+body.fit{overflow:hidden;height:100vh;height:100dvh;padding-bottom:0}
+.fit main{position:fixed;left:0;right:0;top:var(--top,110px);bottom:var(--bot,76px);max-width:none;padding:0;overflow:hidden}
+.fit .slide.cur{display:flex;flex-direction:column;justify-content:center;height:100%;padding:0}
+.fit .slide .fitbox{width:100%;max-width:1120px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-left,0px))}
+.zoom-note{position:fixed;right:12px;top:calc(var(--top,110px) + 8px);z-index:30;font-size:11px;font-weight:700;color:var(--sub);background:var(--bg);border:1px solid var(--rule);padding:1px 6px;display:none}
+.fit .zoom-note.on{display:none}
+.fit .pm-grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:14px}
+.fit .pm{padding:10px 12px}
+.fit .pm .n{font-size:15px}
+.fit .pm-detail{padding:14px 18px;margin-top:12px}
+.fit .pm-detail .num{font-size:32px}
+.fit .bb > div{padding:16px 18px}
+.fit .bb pre{margin-bottom:8px}
+.fit .sec-head h2{font-size:clamp(24px,3.2vw,38px)}
 .pager{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--bg);border-top:3px solid var(--ink)}
 .pager .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px;min-height:72px;padding-bottom:env(safe-area-inset-bottom,0px)}
 .pg-btn{display:flex;align-items:center;gap:12px;border:2px solid var(--ink);background:var(--bg);padding:8px 16px;cursor:pointer;text-align:left;justify-self:start;max-width:100%;transition:background .15s,color .15s,border-color .15s}
@@ -234,11 +254,12 @@ body.paged{padding-bottom:96px}
 .pg-mid{text-align:center}
 .pg-count{font-size:13px;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums}
 .pg-count b{color:var(--ink);font-size:15px}
-.pg-dots{display:flex;gap:4px;justify-content:center;margin-top:6px}
-.pg-dots button{width:26px;height:8px;border:1.5px solid var(--ink);background:var(--bg);padding:0;cursor:pointer;transition:background .2s,width .2s}
+.pg-dots{display:flex;align-items:center;gap:3px;height:14px;justify-content:center;margin-top:6px}
+.pg-dots button{width:16px;height:8px;border:1.5px solid var(--ink);background:var(--bg);padding:0;cursor:pointer;transition:background .2s,width .2s}
 .pg-dots button.seen{background:var(--rule)}
 .pg-dots button.ok{background:var(--ink)}
-.pg-dots button.cur{background:var(--accent);border-color:var(--accent);width:40px}
+.pg-dots button.grp{height:12px}
+.pg-dots button.cur{background:var(--accent);border-color:var(--accent);width:30px}
 .nextcard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;margin-top:64px;border:4px solid var(--ink);padding:26px 30px;text-decoration:none;cursor:pointer;background:var(--bg);width:100%;text-align:left;transition:background .2s,color .2s,box-shadow .2s,transform .2s}
 .nextcard .lb{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--accent)}
 .nextcard .nm{font-size:clamp(24px,3.6vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
@@ -334,6 +355,7 @@ body.paged{padding-bottom:96px}
       <div class="demo-f">가로축 간격은 사건 순서이며 시간 비례가 아니다. 섀넌 1948과 GPT-1 2018은 원문에서 (미검증)으로 표시된 항목이다.</div>
     </div>
 
+    <div class="brk"></div>
     <div class="demo rv">
       <div class="demo-h"><span class="tag">실습</span><strong>n-gram은 앞의 n−1개 단어만 보고 다음 단어의 확률을 센다</strong><span class="hint">막대 옆 슬라이더로 말뭉치 횟수를 바꿔 보기</span></div>
       <div class="demo-b">
@@ -352,6 +374,7 @@ body.paged{padding-bottom:96px}
       <div class="demo-f">예시 값. C(·)는 학습 말뭉치에서 그 단어열이 나온 횟수다.</div>
     </div>
 
+    <div class="brk"></div>
     <div class="demo rv">
       <div class="demo-h"><span class="tag">실습</span><strong>n을 키울 때의 문제 · 차원의 저주</strong></div>
       <div class="demo-b">
@@ -396,6 +419,7 @@ body.paged{padding-bottom:96px}
       <div class="demo-f">가중치는 장표와 같은 예시 값이다. 점수는 그 가중치가 나오도록 거꾸로 맞춘 설명용 값이다. 멀티헤드 어텐션은 이 계산을 h개 헤드에서 병렬로 수행한다.</div>
     </div>
 
+    <div class="brk"></div>
     <div class="demo rv">
       <div class="demo-h"><span class="tag">그림 4</span><strong>같은 트랜스포머 블록이 마스크와 목표에 따라 세 갈래로 나뉘었다</strong></div>
       <div class="demo-b">
@@ -412,6 +436,7 @@ body.paged{padding-bottom:96px}
       <div class="demo-f">격자의 행은 ‘보는 토큰’, 열은 ‘보이는 토큰’이다. T5의 과제 접두어는 프롬프트의 직접적인 전신이다.</div>
     </div>
 
+    <div class="brk"></div>
     <div class="tscroll rv">
       <table class="tbl">
         <thead><tr><th>연구</th><th>출처</th><th>보고한 내용</th></tr></thead>
@@ -446,6 +471,7 @@ body.paged{padding-bottom:96px}
       <div class="demo-f">각 장의 예시 프롬프트와 출력 예는 강의용으로 새로 작성한 것이다. 논문의 수치는 arXiv 초록이나 학회 페이지에서 확인한 값만 옮겼다.</div>
     </div>
 
+    <div class="brk"></div>
     <div class="demo rv">
       <div class="demo-h"><span class="tag">그림 6</span><strong>추론 패턴은 하나의 사슬에서 탐색과 도구 행동의 반복으로 넓어졌다</strong></div>
       <div class="demo-b">
@@ -455,6 +481,7 @@ body.paged{padding-bottom:96px}
       </div>
     </div>
 
+    <div class="brk"></div>
     <div class="sec-head rv" style="margin-top:44px">
       <div class="eyebrow"><span class="tag">03 프롬프트</span><span>부스터에서 브레이크로</span></div>
       <h2 style="font-size:clamp(22px,3.2vw,32px)">2025~2026년 공식 가이드는 독려 문구를 빼고 범위를 정하라고 권한다</h2>
@@ -475,6 +502,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
       </div>
       <p class="cap">위 두 프롬프트는 강의용으로 새로 쓴 예시다.</p>
     </div>
+    <div class="brk"></div>
     <div class="redline rv"><b>판정</b><p>이 변화는 "끌어내기에서 억제로"보다 <b>조향성·통제 가능성으로의 이동</b>으로 부르는 편이 정확하다. 억제는 HHH 정렬, RLHF처럼 모델 개발 층에서 처음부터 중심이었고, 끌어내기는 추론 학습과 test-time compute로 모델 안에 들어갔다.</p></div>
     <a class="anim-link rv" href="animations.html#pr">▶ 애니메이션으로 보기 · Zero-shot부터 APE·OPRO까지 19개 장면</a><br>
     <button class="btn done-btn" type="button" data-done="w1:prompt"></button>
@@ -510,6 +538,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
       <div class="demo-f">CLIP은 4억 개 이미지-텍스트 쌍을 대조 학습해 두 모달리티를 같은 임베딩 공간에 둔다. 가장 단순한 선형 투영(LLaVA)이 가장 널리 퍼졌다.</div>
     </div>
 
+    <div class="brk"></div>
     <div class="sec-head rv" style="margin-top:44px">
       <div class="eyebrow"><span class="tag">04 VLA</span><span>그림 8 · VLA의 작동 원리</span></div>
       <h2 style="font-size:clamp(22px,3.2vw,32px)">VLA는 VLM이 보고 이해한 것을 로봇 행동으로 출력한다</h2>
@@ -533,6 +562,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
       </div>
       <div class="demo-f">핵심 아이디어: 로봇 행동을 ‘또 하나의 언어’로 취급하면, 웹에서 배운 의미 지식이 처음 보는 물체·지시로 일반화되는 데 쓰인다.</div>
     </div>
+    <div class="brk"></div>
     <div class="tscroll rv">
       <table class="tbl">
         <thead><tr><th>모델</th><th>출처</th><th>핵심</th><th>보고 수치</th></tr></thead>
@@ -569,9 +599,11 @@ CRITICAL: You MUST be THOROUGH.</pre>
       <div class="demo-f">■ 위협 · □ 방어. 각 칸의 위협이 실제로 성립하는지 승인된 시험으로 확인하고, 결과를 방어 설계로 되돌리는 절차가 레드티밍의 자리다.</div>
     </div>
 
+    <div class="brk"></div>
     <div class="acc rv" id="acc"></div>
     <p class="cap rv">NIST AI 100-2 E2025와 OWASP LLM Top 10 2025(프롬프트 인젝션 1위)를 바탕으로 정리했다. 공격 기법은 개념과 연구 결과만 다룬다.</p>
 
+    <div class="brk"></div>
     <div class="demo rv">
       <div class="demo-h"><span class="tag red">그림 11</span><strong>능력을 끌어내는 메커니즘은 예외 없이 공격면이 되었다</strong><span class="hint">행을 누르거나 ‘자동 재생’</span></div>
       <div class="demo-b">
@@ -606,6 +638,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
     </div>
   </section>
 </main>
+<span class="zoom-note" id="zoomNote"></span>
 
 <nav class="pager" id="pager" aria-label="페이지 넘기기">
   <div class="wrap">

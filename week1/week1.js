@@ -4,66 +4,108 @@ const $ = id => document.getElementById(id);
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-/* ---------- 페이지 넘김: 한 번에 한 장씩, 다음 버튼 · ←/→ 키 · 주소(#lm) 동기화 ---------- */
+/* ---------- 슬라이드: 장을 화면 단위로 나누고, 넓은 화면에서는 스크롤 없이 맞춘다 ---------- */
 const PAGER = (() => {
-  const pages = [...document.querySelectorAll('main > section')];
+  const main = document.querySelector('main');
+  const secs = [...main.querySelectorAll(':scope > section')];
   const links = [...document.querySelectorAll('#secnav a')];
-  const DESC = { cover: '1주차 표지', summary: '이 강의의 줄기', lm: '통계 모델에서 단어 벡터까지', att: '병목을 없앤 계산', prompt: '열여덟 가지 방법론', vlm: '이미지와 행동을 토큰으로', redteam: '공격면과 공진화', conclusion: '1주차 정리' };
-  const name = i => pages[i].dataset.name;
   const pad = n => String(n).padStart(2, '0');
+  const slides = [];
+  /* 각 장을 .brk 위치에서 잘라 슬라이드로 만든다 */
+  secs.forEach(sec => {
+    const groups = [[]];
+    [...sec.childNodes].forEach(n => { if (n.nodeType === 1 && n.classList.contains('brk')) groups.push([]); else groups[groups.length - 1].push(n); });
+    const tag = sec.querySelector('.sec-head .tag');
+    groups.forEach((g, k) => {
+      const sl = h('section', 'slide' + (sec.classList.contains('concl') ? ' concl' : ''));
+      sl.id = k ? sec.id + '-' + (k + 1) : sec.id;
+      sl.dataset.sec = sec.id; sl.dataset.name = sec.dataset.name; sl.dataset.part = (k + 1) + '/' + groups.length;
+      const box = h('div', 'fitbox' + (sec.classList.contains('sec') ? ' sec' : ''));
+      if (k && tag) box.appendChild(h('div', 'cont', `<span class="${tag.className}">${tag.textContent}</span><span>${k + 1} / ${groups.length}</span>`));
+      g.forEach(n => box.appendChild(n));
+      sl.appendChild(box); main.insertBefore(sl, sec); slides.push(sl);
+    });
+    sec.remove();
+  });
+
   const seen = new Set();
   let cur = -1;
   document.body.classList.add('paged');
-  $('pgTot').textContent = pad(pages.length);
+  $('pgTot').textContent = pad(slides.length);
+  const label = i => slides[i].dataset.name + (slides[i].dataset.part !== '1/1' ? ' ' + slides[i].dataset.part.replace('/', ' / ') : '');
 
-  /* 각 장 끝에 다음 장 카드 */
-  pages.forEach((p, i) => {
-    const nx = pages[i + 1];
-    const c = h('button', 'nextcard rv');
-    c.type = 'button';
-    if (nx) {
-      c.innerHTML = `<span class="no">${pad(i + 2)}</span><span><span class="lb">NEXT · 다음 장</span><span class="nm" style="display:block">${name(i + 1)}</span><span class="ds" style="display:block">${DESC[nx.id] || ''}</span></span><span class="ar">→</span>`;
-      c.addEventListener('click', () => go(i + 1));
-    } else {
-      c.innerHTML = `<span class="no">✓</span><span><span class="lb">1주차 끝</span><span class="nm" style="display:block">코스 홈으로</span><span class="ds" style="display:block">2주차는 강의 당일 열린다</span></span><span class="ar">→</span>`;
-      c.addEventListener('click', () => { location.href = '../'; });
-    }
-    p.appendChild(c);
-  });
-
-  const dots = pages.map((p, i) => {
-    const d = h('button'); d.type = 'button'; d.title = pad(i + 1) + ' ' + name(i); d.setAttribute('aria-label', d.title);
+  const dots = slides.map((s, i) => {
+    const d = h('button'); d.type = 'button'; d.title = pad(i + 1) + ' ' + label(i); d.setAttribute('aria-label', d.title);
     d.addEventListener('click', () => go(i));
     $('pgDots').appendChild(d); return d;
   });
 
+  /* ----- 화면 맞춤 ----- */
+  const wide = () => innerWidth >= 760 && innerHeight >= 520;
+  function layout() {
+    const fit = wide();
+    document.body.classList.toggle('fit', fit);
+    const top = document.querySelector('.topbar').getBoundingClientRect().height;
+    const bot = $('pager').getBoundingClientRect().height;
+    document.documentElement.style.setProperty('--top', top + 'px');
+    document.documentElement.style.setProperty('--bot', bot + 'px');
+    refit();
+  }
+  let fq = 0;
+  function refit() {
+    cancelAnimationFrame(fq);
+    fq = requestAnimationFrame(() => {
+      const sl = slides[cur]; if (!sl) return;
+      const box = sl.firstChild;
+      box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = '';
+      if (!document.body.classList.contains('fit')) { $('zoomNote').classList.remove('on'); return; }
+      const avail = main.clientHeight;
+      const apply = z => { box.style.zoom = z; box.style.width = (100 / z) + '%'; box.style.maxWidth = (1120 / z) + 'px'; };  /* 줄어든 만큼 폭을 넓혀 화면 폭을 그대로 쓴다 */
+      const fits = z => { apply(z); return box.scrollHeight * z <= avail + 1; };
+      let z = 1;
+      if (!fits(1)) {                          /* 폭이 바뀌면 줄바꿈도 바뀌므로 이분 탐색으로 맞는 배율을 찾는다 */
+        let lo = 0.5, hi = 1;
+        for (let k = 0; k < 8; k++) { const m = (lo + hi) / 2; if (fits(m)) lo = m; else hi = m; }
+        z = lo; apply(z);
+      } else { box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = ''; }
+      $('zoomNote').textContent = '화면 맞춤 ' + Math.round(z * 100) + '%';
+      $('zoomNote').classList.toggle('on', z < 0.999);
+    });
+  }
+  addEventListener('resize', layout);
+  /* 내용이 바뀌는 조작 뒤에는 다시 맞춘다 */
+  main.addEventListener('click', () => setTimeout(refit, 30));
+  main.addEventListener('toggle', () => setTimeout(refit, 30), true);
+  main.addEventListener('input', () => setTimeout(refit, 30));
+
   function go(i, opt = {}) {
-    i = Math.max(0, Math.min(pages.length - 1, i));
+    i = Math.max(0, Math.min(slides.length - 1, i));
     if (i === cur) return;
     const back = i < cur;
     cur = i; seen.add(i);
-    pages.forEach((p, j) => { p.classList.toggle('cur', j === i); p.classList.toggle('back', j === i && back); });
-    p_reveal(pages[i]);
-    links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + pages[i].id));
+    slides.forEach((s, j) => { s.classList.toggle('cur', j === i); s.classList.toggle('back', j === i && back); });
+    reveal(slides[i]);
+    const sec = slides[i].dataset.sec;
+    links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + sec));
     const on = links.find(a => a.classList.contains('on'));
     if (on) on.scrollIntoView({ block: 'nearest', inline: 'center' });
-    dots.forEach((d, j) => { d.classList.toggle('cur', j === i); d.classList.toggle('seen', seen.has(j)); });
-    $('pgNum').textContent = pad(i + 1); $('pgName').textContent = name(i);
+    dots.forEach((d, j) => { d.classList.toggle('cur', j === i); d.classList.toggle('seen', seen.has(j)); d.classList.toggle('grp', slides[j].dataset.sec === sec); });
+    $('pgNum').textContent = pad(i + 1); $('pgName').textContent = label(i);
     $('pgPrev').disabled = i === 0;
-    $('pgPrevName').textContent = i > 0 ? name(i - 1) : '';
-    $('pgNextName').textContent = i < pages.length - 1 ? name(i + 1) : '코스 홈';
-    if (!opt.noHash) history.replaceState(null, '', '#' + pages[i].id);
-    if (!opt.noScroll) window.scrollTo({ top: 0, behavior: 'instant' in document.documentElement.style ? 'instant' : 'auto' });
+    $('pgPrevName').textContent = i > 0 ? label(i - 1) : '';
+    $('pgNextName').textContent = i < slides.length - 1 ? label(i + 1) : '코스 홈';
+    if (!opt.noHash) history.replaceState(null, '', '#' + slides[i].id);
+    window.scrollTo(0, 0);
+    refit();
   }
-  /* 숨겨져 있던 장의 등장 효과를 다시 건다 */
-  function p_reveal(p) {
-    if (XR.reduce) return;
-    p.querySelectorAll('.rv').forEach((e, k) => { e.classList.remove('in'); setTimeout(() => e.classList.add('in'), 60 + Math.min(k, 6) * 70); });
+  function reveal(s) {
+    if (XR.reduce) { s.querySelectorAll('.rv').forEach(e => e.classList.add('in')); return; }
+    s.querySelectorAll('.rv').forEach((e, k) => { e.classList.remove('in'); setTimeout(() => e.classList.add('in'), 40 + Math.min(k, 6) * 60); });
   }
-  const idx = hash => pages.findIndex(p => '#' + p.id === hash);
+  const idx = hash => slides.findIndex(s => '#' + s.id === hash);
 
   $('pgPrev').addEventListener('click', () => go(cur - 1));
-  $('pgNext').addEventListener('click', () => { if (cur === pages.length - 1) location.href = '../'; else go(cur + 1); });
+  $('pgNext').addEventListener('click', () => { if (cur === slides.length - 1) location.href = '../'; else go(cur + 1); });
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href^="#"]');
     if (!a) return;
@@ -74,17 +116,26 @@ const PAGER = (() => {
   document.addEventListener('keydown', e => {
     if (e.altKey || e.ctrlKey || e.metaKey) return;
     if (e.target.closest('input,textarea,select,[role="tablist"],.tl,[contenteditable]')) return;
-    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); $('pgNext').click(); }
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || (e.key === ' ' && !e.target.closest('button,a,summary,[role="button"],tr'))) { e.preventDefault(); $('pgNext').click(); }
     if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(cur - 1); }
   });
+  /* 트랙패드·휠: 화면 맞춤 모드에서는 휠로도 넘긴다 */
+  let wl = 0;
+  addEventListener('wheel', e => {
+    if (!document.body.classList.contains('fit') || Math.abs(e.deltaY) < 30) return;
+    const now = Date.now(); if (now - wl < 700) return; wl = now;
+    if (e.deltaY > 0) $('pgNext').click(); else go(cur - 1);
+  }, { passive: true });
 
   XR.doneButtons(st => {
     links.forEach(a => a.dataset.k && a.classList.toggle('ok', !!st['w1:' + a.dataset.k]));
-    dots.forEach((d, j) => d.classList.toggle('ok', !!st['w1:' + pages[j].id]));
+    dots.forEach((d, j) => d.classList.toggle('ok', !!st['w1:' + slides[j].dataset.sec]));
   });
   const start = idx(location.hash);
-  go(start >= 0 ? start : 0, { noHash: start < 0, noScroll: true });
-  return { go };
+  layout();
+  go(start >= 0 ? start : 0, { noHash: start < 0 });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+  return { go, refit };
 })();
 
 /* ---------- 01 연표 ---------- */
