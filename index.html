@@ -3,10 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="XREAL CV · AI Agent Community">
+<meta property="og:title" content="XREAL CV · AI Agent Community — 3주 강의">
+<meta property="og:description" content="LLM에서 AI 에이전트까지, 3주 강의. 지금은 1주차: LLM의 역사와 작동 원리, 그리고 레드티밍.">
+<meta property="og:url" content="https://qnftk020.github.io/xreal-cv-ai-agent-community/">
+<meta property="og:image" content="https://qnftk020.github.io/xreal-cv-ai-agent-community/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="손을 흔드는 AI 로봇과 'LLM에서 AI 에이전트까지, 3주 강의'">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <title>XREAL CV · AI Agent Community — 3주 강의</title>
 <meta name="description" content="xreal-cv-ai-agent-community 3주 강의. 1주차: LLM의 역사와 작동 원리, 그리고 레드티밍.">
-<meta property="og:title" content="XREAL CV · AI Agent Community — 3주 강의">
-<meta property="og:description" content="LLM · VLM · VLA · 레드티밍에서 AI 에이전트까지">
 <link rel="stylesheet" href="assets/style.css">
 <style>
 .domainbox{display:flex;flex-wrap:wrap;align-items:stretch;border:2px solid var(--ink);margin-top:30px;max-width:900px}
@@ -39,19 +48,12 @@ a.card:hover{transform:translate(-5px,-5px);box-shadow:8px 8px 0 var(--accent)}
 a.card:hover .go{color:var(--accent)}
 @media (max-width:860px){.weeks{grid-template-columns:1fr}.track::before{display:none}}
 
-/* 1주차 미리보기 */
-.peek{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:0;border:3px solid var(--ink);margin-top:28px}
-.peek a{display:block;padding:18px 20px;text-decoration:none;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transition:background .15s,color .15s}
-.peek a:hover{background:var(--ink);color:#fff}
-.peek b{display:block;font-size:12px;letter-spacing:.1em;color:var(--accent)}
-.peek strong{display:block;font-size:18px;font-weight:800;margin:4px 0}
-.peek span{font-size:13.5px}
 </style>
 </head>
 <body>
 <header class="topbar">
   <div class="wrap">
-    <a class="brand" href="./"><span class="mark">XR</span><span>XREAL CV · AI Agent Community<br><small>XREAL-CV-AI-AGENT-COMMUNITY</small></span></a>
+    <a class="brand" href="./" aria-label="XREAL CV · AI Agent Community 홈"><svg class="mark" viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" fill="#111"/><path d="M9 9 L27 27 M27 9 L9 27" stroke="#fff" stroke-width="4.2" stroke-linecap="square"/><rect x="25" y="25" width="11" height="11" fill="#e1262c"/></svg><span class="word">XREAL</span><span class="div" aria-hidden="true"></span><span class="sub"><b>CV · AI AGENT</b><b>COMMUNITY</b></span></a>
     <nav class="topnav" aria-label="주차">
       <a href="./" aria-current="page">코스 홈</a>
       <a href="week1/">1주차</a>
@@ -123,19 +125,6 @@ a.card:hover .go{color:var(--accent)}
     </div>
   </section>
 
-  <section class="sec" id="peek">
-    <div class="sec-head rv">
-      <div class="eyebrow"><span class="tag">1주차</span><span>바로 가기</span></div>
-      <h2>1주차는 다섯 장으로 되어 있다</h2>
-    </div>
-    <div class="peek rv">
-      <a href="week1/#lm"><b>01</b><strong>언어 모델</strong><span>n-gram에서 임베딩까지</span></a>
-      <a href="week1/#att"><b>02</b><strong>어텐션</strong><span>병목을 없앤 계산</span></a>
-      <a href="week1/#prompt"><b>03</b><strong>프롬프트</strong><span>열여덟 가지 방법론</span></a>
-      <a href="week1/#vlm"><b>04</b><strong>VLM · VLA</strong><span>이미지와 행동을 토큰으로</span></a>
-      <a href="week1/#redteam"><b>05</b><strong>레드티밍</strong><span>공격면과 공진화</span></a>
-    </div>
-  </section>
 </main>
 
 <footer class="foot">

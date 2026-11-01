@@ -132,7 +132,7 @@ const PAGER = (() => {
       const sl = h('section', 'slide' + (sec.classList.contains('concl') ? ' concl' : ''));
       sl.id = k ? sec.id + '-' + (k + 1) : sec.id;
       sl.dataset.sec = sec.id; sl.dataset.name = sec.dataset.name; sl.dataset.part = (k + 1) + '/' + groups.length;
-      const box = h('div', 'fitbox' + (sec.classList.contains('sec') ? ' sec' : ''));
+      const box = h('div', 'fitbox ' + sec.className);  /* hero · sec 등 원래 클래스를 유지한다 */
       const sid = g.find(n => n.nodeType === 1 && n.dataset && n.dataset.slide);
       if (sid) { sl.id = sid.dataset.slide; sl.dataset.label = sid.dataset.label; sl.classList.add('anim'); }
       if (k && tag && !sid) box.appendChild(h('div', 'cont', `<span class="${tag.className}">${tag.textContent}</span><span>${k + 1} / ${groups.length}</span>`));

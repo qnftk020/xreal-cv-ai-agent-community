@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:P;font-weight:500;src:url(fonts/pretendard-500.woff2)}
+@font-face{font-family:P;font-weight:700;src:url(fonts/pretendard-700.woff2)}
+@font-face{font-family:P;font-weight:800;src:url(fonts/pretendard-800.woff2)}
+html,body{margin:0}
+body{width:1200px;height:630px;overflow:hidden;background:#fff;font-family:P,sans-serif;color:#111;position:relative;word-break:keep-all}
+.top{position:absolute;left:0;right:0;top:0;height:14px;background:#111}
+.grid{position:absolute;inset:14px 0 0 0;background-image:radial-gradient(#d9d9d9 1.6px,transparent 1.7px);background-size:28px 28px;opacity:.7}
+.left{position:absolute;left:64px;top:70px;width:600px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand .word{font-weight:800;font-size:34px;letter-spacing:-.045em}
+.brand .div{width:3px;height:36px;background:#111}
+.brand .sub{display:flex;flex-direction:column;gap:5px;line-height:1}
+.brand .sub b{font-weight:800;font-size:14px;letter-spacing:.2em}
+.brand .sub b+b{color:#e1262c}
+h1{font-weight:800;font-size:76px;line-height:1.08;letter-spacing:-.05em;margin:46px 0 30px}
+h1 em{font-style:normal;color:#e1262c}
+.slab{display:inline-flex;border:4px solid #111;align-items:stretch;background:#fff}
+.slab b{background:#111;color:#fff;font-size:20px;letter-spacing:.12em;padding:14px 18px;display:flex;align-items:center}
+.slab span{font-weight:800;font-size:23px;padding:12px 20px;display:flex;align-items:center}
+.foot{position:absolute;left:64px;bottom:42px;font-weight:700;font-size:18px;color:#4d4d4d;letter-spacing:.02em}
+.foot i{font-style:normal;background:#f2f2f2;color:#111;padding:3px 10px;font-family:ui-monospace,Menlo,monospace;font-size:17px}
+svg.bot{position:absolute;right:30px;top:40px;width:520px;height:560px}
+</style></head><body>
+<div class="top"></div><div class="grid"></div>
+<div class="left">
+  <div class="brand">
+    <svg width="48" height="48" viewBox="0 0 36 36"><rect width="36" height="36" fill="#111"/><path d="M9 9 L27 27 M27 9 L9 27" stroke="#fff" stroke-width="4.2" stroke-linecap="square"/><rect x="25" y="25" width="11" height="11" fill="#e1262c"/></svg>
+    <span class="word">XREAL</span><span class="div"></span><span class="sub"><b>CV · AI AGENT</b><b>COMMUNITY</b></span>
+  </div>
+  <h1>LLM에서<br><em>AI 에이전트</em>까지,<br>3주 강의</h1>
+  <div class="slab"><b>WEEK 01</b><span>LLM의 역사와 작동 원리, 그리고 레드티밍</span></div>
+</div>
+<div class="foot">qnftk020.github.io/xreal-cv-ai-agent-community</div>
+
+<svg class="bot" viewBox="0 0 520 560">
+  <!-- 말풍선 -->
+  <g transform="translate(286 14)">
+    <path d="M0 0 H196 V92 H70 L40 122 L44 92 H0 Z" fill="#fff" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+    <text x="98" y="58" text-anchor="middle" font-family="P" font-weight="800" font-size="42" fill="#111">안녕!</text>
+    <circle cx="172" cy="24" r="7" fill="#e1262c"/>
+  </g>
+  <!-- 그림자 -->
+  <ellipse cx="230" cy="528" rx="150" ry="16" fill="#111" opacity=".12"/>
+  <!-- 다리 -->
+  <rect x="178" y="450" width="34" height="62" rx="10" fill="#111"/>
+  <rect x="250" y="450" width="34" height="62" rx="10" fill="#111"/>
+  <rect x="166" y="496" width="58" height="24" rx="12" fill="#111"/>
+  <rect x="238" y="496" width="58" height="24" rx="12" fill="#111"/>
+  <!-- 몸 -->
+  <rect x="140" y="320" width="182" height="150" rx="34" fill="#fff" stroke="#111" stroke-width="6"/>
+  <rect x="186" y="358" width="90" height="56" rx="10" fill="#111"/>
+  <path d="M200 388 l14 -14 l14 14 l14 -14 l14 14" fill="none" stroke="#e1262c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="231" cy="440" r="7" fill="#e1262c"/>
+  <!-- 왼팔 (내림) -->
+  <path d="M144 360 C108 380 100 420 112 446" fill="none" stroke="#111" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="113" cy="452" r="20" fill="#fff" stroke="#111" stroke-width="6"/>
+  <!-- 목 -->
+  <rect x="210" y="296" width="42" height="30" fill="#111"/>
+  <!-- 안테나 -->
+  <path d="M231 112 V68" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="231" cy="58" r="16" fill="#e1262c" stroke="#111" stroke-width="5"/>
+  <!-- 귀 -->
+  <rect x="88" y="182" width="30" height="66" rx="12" fill="#111"/>
+  <rect x="344" y="182" width="30" height="66" rx="12" fill="#111"/>
+  <!-- 머리 -->
+  <rect x="106" y="108" width="250" height="198" rx="56" fill="#111"/>
+  <rect x="130" y="134" width="202" height="146" rx="40" fill="#fff"/>
+  <!-- 눈: 웃는 눈 -->
+  <path d="M168 206 q20 -26 40 0" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round"/>
+  <path d="M254 206 q20 -26 40 0" fill="none" stroke="#111" stroke-width="9" stroke-linecap="round"/>
+  <!-- 볼 -->
+  <ellipse cx="166" cy="236" rx="18" ry="11" fill="#e1262c" opacity=".85"/>
+  <ellipse cx="296" cy="236" rx="18" ry="11" fill="#e1262c" opacity=".85"/>
+  <!-- 입 -->
+  <path d="M212 236 q19 22 38 0 Z" fill="#111" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+  <!-- 오른팔 (흔들기) -->
+  <path d="M316 356 C376 344 424 312 440 262" fill="none" stroke="#111" stroke-width="22" stroke-linecap="round"/>
+  <g transform="translate(446 232) rotate(14)">
+    <rect x="-27" y="-30" width="54" height="56" rx="22" fill="#fff" stroke="#111" stroke-width="6"/>
+    <path d="M-13 -30 V-48 M0 -32 V-54 M13 -30 V-48" stroke="#111" stroke-width="6" stroke-linecap="round"/>
+    <path d="M-27 -2 H-40" stroke="#111" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g fill="none" stroke="#e1262c" stroke-width="6" stroke-linecap="round">
+    <path d="M492 206 q16 20 8 48"/>
+    <path d="M396 190 q-16 16 -10 42"/>
+  </g>
+  <!-- 반짝 -->
+  <path d="M74 110 l6 16 l16 6 l-16 6 l-6 16 l-6 -16 l-16 -6 l16 -6 Z" fill="#111"/>
+  <path d="M40 300 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 Z" fill="#e1262c"/>
+</svg>
+</body></html>
