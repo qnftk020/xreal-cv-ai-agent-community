@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>1주차 · LLM의 역사와 작동 원리, 그리고 레드티밍 — XREAL CV · AI Agent Community</title>
+<meta name="description" content="xreal-cv-ai-agent-community 1주차 강의. 임베딩에서 VLA와 의료 LLM 레드티밍까지.">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+.secnav{border-top:1.5px solid var(--rule)}
+.secnav .wrap{display:flex;gap:4px;overflow-x:auto;min-height:40px;align-items:center;scrollbar-width:none}
+.secnav a{font-size:13px;font-weight:700;text-decoration:none;padding:4px 10px;white-space:nowrap;border:1.5px solid transparent}
+.secnav a b{color:var(--sub);font-weight:600;margin-right:6px;font-variant-numeric:tabular-nums}
+.secnav a:hover{border-color:var(--ink)}
+.secnav a.on{background:var(--ink);color:#fff}
+.secnav a.on b{color:#fff}
+.secnav a.ok::after{content:" ✓";color:var(--accent)}
+.sec{scroll-margin-top:104px}
+
+/* 데모 공통 */
+.demo{border:3px solid var(--ink);margin-top:28px}
+.demo-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding:12px 18px}
+.demo-h .tag{min-width:0}
+.demo-h strong{font-size:17px;font-weight:800}
+.demo-h .hint{margin-left:auto;font-size:12.5px;color:var(--sub);font-weight:700}
+.demo-b{padding:22px}
+.demo-f{border-top:1.5px solid var(--rule);padding:10px 18px;font-size:13px;color:var(--sub)}
+.anim-link{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;font-weight:700;margin-top:18px;text-decoration:none;border-bottom:2px solid var(--accent)}
+.anim-link:hover{color:var(--accent)}
+
+/* 연표 */
+.tl{position:relative;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;padding:8px 0 4px}
+.tl::before{content:"";position:absolute;left:0;right:0;top:50%;height:2px;background:var(--ink)}
+.tl button{position:relative;z-index:1;border:0;background:var(--ink);color:#fff;font-weight:800;font-size:15px;padding:9px 0;cursor:pointer;transition:background .15s,transform .15s}
+.tl button:hover{transform:translateY(-2px)}
+.tl button[aria-selected="true"]{background:var(--accent)}
+.eras{display:grid;grid-template-columns:2fr 2fr 2fr 1fr 2fr 1fr;gap:6px;margin-top:14px}
+.eras span{border:2px solid var(--ink);text-align:center;font-weight:800;font-size:13.5px;padding:8px 4px;transition:background .2s,color .2s}
+.eras span.on{background:var(--ink);color:#fff}
+.tl-card{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:start;border:2px solid var(--ink);margin-top:20px;padding:20px 22px;min-height:132px}
+.tl-card .yr{font-size:52px;font-weight:800;line-height:1;letter-spacing:-.04em;color:var(--accent);font-variant-numeric:tabular-nums}
+.tl-card h4{margin:0 0 4px;font-size:22px;font-weight:800}
+.tl-card .who{font-weight:700;color:var(--sub);font-size:14px}
+.tl-card p{margin:8px 0 0}
+.tl-ctl{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+@media (max-width:760px){.tl{grid-template-columns:repeat(5,minmax(0,1fr))}.tl::before{display:none}.eras{grid-template-columns:repeat(3,1fr)}.tl-card{grid-template-columns:1fr}.tl-card .yr{font-size:40px}}
+
+/* n-gram */
+.ng-ctx{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.wbox{border:2.5px solid var(--ink);padding:10px 18px;text-align:center;min-width:110px}
+.wbox b{display:block;font-size:18px;font-weight:800}
+.wbox span{font-size:12.5px;color:var(--sub)}
+.wbox.dash{border-style:dashed;border-color:var(--sub);color:var(--sub)}
+.wbox.solid{background:var(--ink);color:#fff}
+.wbox.solid span{color:#ddd}
+.wbox.solid.pulse{animation:pulse 1.6s infinite}
+@keyframes pulse{50%{background:var(--accent)}}
+.bars{margin-top:22px;display:grid;gap:10px}
+.brow{display:grid;grid-template-columns:72px 1fr 54px 150px;gap:12px;align-items:center}
+.brow label{font-weight:800;text-align:right}
+.brow .trk{height:30px;border-left:2px solid var(--ink);position:relative}
+.brow .trk i{position:absolute;left:0;top:0;bottom:0;width:0;border:2px solid var(--ink);border-left:0;transition:width .45s cubic-bezier(.2,.7,.2,1)}
+.brow.top .trk i{background:var(--ink)}
+.brow .p{font-weight:800;font-variant-numeric:tabular-nums}
+.brow input{width:100%;accent-color:var(--accent)}
+.brow small{display:block;font-size:11.5px;color:var(--sub);text-align:center}
+@media (max-width:640px){.brow{grid-template-columns:60px 1fr 46px}.brow .ctl{grid-column:1/-1}}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;cursor:pointer;margin-top:14px}
+.toggle input{accent-color:var(--accent);width:18px;height:18px}
+.boom{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-top:8px}
+.boom input{accent-color:var(--accent);width:100%}
+.boom .val{font-size:34px;font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.boom .val sup{font-size:18px}
+.logbar{height:14px;border:2px solid var(--ink);margin-top:10px}
+.logbar i{display:block;height:100%;background:var(--accent);transition:width .35s}
+
+/* 셀프 어텐션 */
+.toks{display:flex;flex-wrap:wrap;gap:8px}
+.tok{position:relative;border:2.5px solid var(--ink);padding:10px 14px 26px;min-width:76px;text-align:center;font-weight:800;font-size:17px;transition:background .3s,color .3s,border-color .3s}
+.tok .w{position:absolute;left:0;right:0;bottom:4px;font-size:12px;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums}
+.tok .heat{position:absolute;left:0;bottom:0;height:4px;background:var(--accent);width:0;transition:width .5s}
+.tok.q{background:var(--ink);color:#fff}
+.tok.q .w{color:#ccc}
+.tok.max{border-color:var(--accent);background:var(--accent-soft)}
+.att-steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:20px}
+.att-steps button{border:2px solid var(--ink);background:var(--bg);padding:10px 8px;font-weight:800;font-size:13.5px;cursor:pointer;text-align:left;line-height:1.35}
+.att-steps button small{display:block;font-weight:600;color:var(--sub);font-size:12px}
+.att-steps button[aria-selected="true"]{background:var(--ink);color:#fff}
+.att-steps button[aria-selected="true"] small{color:#ccc}
+.att-steps button.past{border-color:var(--accent)}
+.att-say{margin-top:14px;min-height:3.3em;font-weight:600}
+@media (max-width:700px){.att-steps{grid-template-columns:1fr 1fr}}
+
+/* 마스크 격자 */
+.mask-wrap{display:grid;grid-template-columns:minmax(0,auto) 1fr;gap:28px;align-items:start;margin-top:20px}
+.mgrid{display:grid;gap:3px}
+.mgrid i{width:30px;height:30px;border:1.5px solid var(--ink);background:var(--bg);transition:background .25s,opacity .25s,border-color .25s}
+.mgrid i.on{background:var(--ink)}
+.mgrid i.x{background:var(--accent);border-color:var(--accent)}
+.mgrid i.off{opacity:.25}
+.mlegend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;font-weight:700;margin-top:10px}
+.mlegend span::before{content:"";display:inline-block;width:12px;height:12px;border:1.5px solid var(--ink);margin-right:6px;vertical-align:-1px}
+.mlegend .a::before{background:var(--ink)}
+.mlegend .b::before{background:var(--accent);border-color:var(--accent)}
+.mlegend .c::before{opacity:.25}
+.minfo dl{margin:0;display:grid;grid-template-columns:96px 1fr;gap:8px 14px}
+.minfo dt{font-weight:800}
+.minfo dd{margin:0}
+@media (max-width:700px){.mask-wrap{grid-template-columns:1fr}.mgrid i{width:26px;height:26px}}
+
+/* 프롬프트 방법론 */
+.pm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:10px;margin-top:18px}
+.pm{border:2px solid var(--ink);background:var(--bg);padding:14px 16px;text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s,opacity .25s}
+.pm:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 var(--ink)}
+.pm[aria-expanded="true"]{background:var(--ink);color:#fff;box-shadow:5px 5px 0 var(--accent)}
+.pm .g{font-size:11.5px;font-weight:800;letter-spacing:.06em;color:var(--accent)}
+.pm .n{display:block;font-size:17px;font-weight:800;margin-top:2px}
+.pm.dim{opacity:.18}
+.pm-detail{border:3px solid var(--ink);margin-top:14px;padding:18px 22px;display:grid;grid-template-columns:1fr auto;gap:10px 20px;align-items:start}
+.pm-detail h4{margin:0;font-size:22px;font-weight:800}
+.pm-detail p{margin:4px 0 0}
+.pm-detail .src{font-size:13.5px;color:var(--sub);grid-column:1/-1}
+.pm-detail .src a{color:var(--ink);font-weight:700}
+.pm-detail .num{font-size:40px;font-weight:800;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+
+.flow{display:grid;gap:8px;justify-items:center;min-height:300px;margin-top:6px}
+.frow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;opacity:0;transform:translateY(8px);transition:opacity .35s,transform .35s}
+.frow.in{opacity:1;transform:none}
+.fb{border:2px solid var(--ink);padding:7px 14px;font-weight:800;font-size:14px;min-width:84px;text-align:center;background:var(--bg)}
+.fb.s{background:var(--ink);color:#fff}
+.fb.r{border-color:var(--accent);color:var(--accent)}
+.fb.x{border-style:dashed;border-color:var(--sub);color:var(--sub);text-decoration:line-through}
+.fb.a{background:var(--accent);border-color:var(--accent);color:#fff}
+.farr{font-weight:800;color:var(--sub);line-height:1}
+
+.bb{display:grid;grid-template-columns:1fr 1fr;gap:0;border:3px solid var(--ink);margin-top:20px}
+.bb > div{padding:20px 22px;transition:opacity .3s,background .3s}
+.bb > div + div{border-left:3px solid var(--ink)}
+.bb h4{margin:0 0 10px;font-size:18px;font-weight:800}
+.bb pre{white-space:pre-wrap;font-family:var(--mono);font-size:13.5px;background:var(--soft);padding:12px 14px;margin:0 0 12px;line-height:1.55;border-left:4px solid var(--ink)}
+.bb .old pre{border-left-color:var(--accent)}
+.bb .dim{opacity:.3}
+.bb .hot{background:var(--accent-soft)}
+.switch{display:inline-flex;border:2px solid var(--ink);margin-top:18px}
+.switch button{border:0;background:var(--bg);font-weight:800;font-size:14px;padding:9px 18px;cursor:pointer}
+.switch button[aria-pressed="true"]{background:var(--ink);color:#fff}
+@media (max-width:760px){.bb{grid-template-columns:1fr}.bb > div + div{border-left:0;border-top:3px solid var(--ink)}}
+
+/* 파이프라인 (VLM · VLA) */
+.pipe{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;row-gap:10px}
+.pipe .st{flex:1 1 120px;border:2.5px solid var(--ink);padding:12px 12px;text-align:center;transition:background .3s,color .3s,border-color .3s,transform .3s;background:var(--bg)}
+.pipe .st b{display:block;font-size:15.5px;font-weight:800}
+.pipe .st span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+.pipe .st.on{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-3px)}
+.pipe .st.solid{background:var(--ink);color:#fff}
+.pipe .st.solid span{color:#ccc}
+.pipe .st.solid.on{background:var(--accent);border-color:var(--accent)}
+.pipe .ar{flex:0 0 26px;display:grid;place-items:center;font-weight:800;color:var(--sub)}
+.pipe .ar.on{color:var(--accent)}
+.say{margin-top:16px;border-left:4px solid var(--accent);padding:6px 14px;min-height:3.2em;font-weight:600}
+@media (max-width:760px){.pipe{flex-direction:column}.pipe .ar{transform:rotate(90deg);height:22px}}
+
+/* 공격면 */
+.surf{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border:3px solid var(--ink)}
+.surf .col{border-left:1.5px solid var(--ink);cursor:pointer;transition:background .2s,opacity .25s}
+.surf .col:first-child{border-left:0}
+.surf .col h5{margin:0;background:var(--ink);color:#fff;font-size:14.5px;font-weight:800;padding:10px 12px;text-align:center}
+.surf .col ul{list-style:none;margin:0;padding:10px 12px;font-size:13.5px;min-height:110px}
+.surf .col li{padding:3px 0}
+.surf .col .def{border-top:1.5px dashed var(--ink);background:var(--soft)}
+.surf .col .thr li::before{content:"■ ";color:var(--accent);font-size:10px}
+.surf .col .def li::before{content:"□ ";font-size:10px}
+.surf.focus .col{opacity:.3}
+.surf.focus .col.on{opacity:1;background:var(--accent-soft)}
+.surf.focus .col.on h5{background:var(--accent)}
+.phase{display:grid;grid-template-columns:3fr 2fr;margin-bottom:8px;font-weight:800;font-size:13px;letter-spacing:.06em}
+.phase span:last-child{text-align:right}
+@media (max-width:860px){.surf{grid-template-columns:1fr 1fr}.surf .col{border-top:1.5px solid var(--ink)}.phase{display:none}}
+
+.acc{border:3px solid var(--ink);margin-top:20px}
+.acc details{border-top:1.5px solid var(--ink)}
+.acc details:first-child{border-top:0}
+.acc summary{list-style:none;cursor:pointer;padding:14px 18px;font-weight:800;font-size:16.5px;display:flex;gap:12px;align-items:center}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";margin-left:auto;font-size:22px;line-height:1;transition:transform .2s}
+.acc details[open] summary{background:var(--ink);color:#fff}
+.acc details[open] summary::after{transform:rotate(45deg)}
+.acc summary small{font-weight:600;font-size:13px;color:var(--sub)}
+.acc details[open] summary small{color:#ccc}
+.acc .bd{padding:14px 18px 18px;display:grid;grid-template-columns:120px 1fr;gap:6px 14px}
+.acc .bd b{font-size:13.5px}
+
+.coevo{width:100%;border-collapse:separate;border-spacing:0 8px;margin-top:14px}
+.coevo th{font-size:13px;letter-spacing:.06em;text-align:left;padding:0 10px}
+.coevo td{border:2px solid var(--ink);padding:11px 14px;font-weight:700;transition:background .3s,color .3s,border-color .3s}
+.coevo td.arw{border:0;width:34px;text-align:center;color:var(--sub);padding:0}
+.coevo tr{cursor:pointer}
+.coevo tr.on td.c1{background:var(--ink);color:#fff}
+.coevo tr.on td.c2{background:var(--accent);border-color:var(--accent);color:#fff;transition-delay:.25s}
+.coevo tr.on td.c3{background:var(--accent-soft);border-color:var(--accent);transition-delay:.5s}
+.coevo tr.on td.arw{color:var(--accent)}
+@media (max-width:700px){.coevo td{padding:8px;font-size:13px}.coevo td.arw{width:16px}}
+
+.concl .panel{position:relative;padding-top:56px}
+.concl .n{position:absolute;top:0;left:0;background:var(--ink);color:#fff;font-weight:800;font-size:22px;width:44px;height:44px;display:grid;place-items:center}
+.concl .panel:hover .n{background:var(--accent)}
+.next{margin-top:24px;border:3px solid var(--accent);padding:18px 22px;display:grid;grid-template-columns:120px 1fr;gap:14px}
+.next b{color:var(--accent);font-size:18px}
+.next p{margin:0}
+@media (max-width:640px){.next{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../"><span class="mark">XR</span><span>XREAL CV · AI Agent Community<br><small>XREAL-CV-AI-AGENT-COMMUNITY · WEEK 01</small></span></a>
+    <nav class="topnav" aria-label="주차">
+      <a href="../">코스 홈</a>
+      <a href="./" aria-current="page">1주차</a>
+      <a href="../week2/" class="locked">2주차</a>
+      <a href="../week3/" class="locked">3주차</a>
+    </nav>
+  </div>
+  <nav class="secnav" aria-label="장 이동">
+    <div class="wrap" id="secnav">
+      <a href="#summary"><b>00</b>요약</a>
+      <a href="#lm" data-k="lm"><b>01</b>언어 모델</a>
+      <a href="#att" data-k="att"><b>02</b>어텐션</a>
+      <a href="#prompt" data-k="prompt"><b>03</b>프롬프트</a>
+      <a href="#vlm" data-k="vlm"><b>04</b>VLM · VLA</a>
+      <a href="#redteam" data-k="redteam"><b>05</b>레드티밍</a>
+      <a href="#conclusion"><b>06</b>결론</a>
+    </div>
+  </nav>
+  <div class="readbar"></div>
+</header>
+
+<main class="wrap">
+  <!-- 표지 -->
+  <section class="hero">
+    <div class="rv"><span class="tag line">WEEK 01 · LLM · VLM · VLA · 레드티밍 · 기준일 2026. 10. 25</span></div>
+    <h1 class="rv">LLM의 역사와 작동 원리,<br>그리고 레드티밍</h1>
+    <div class="slab rv">
+      <b>임베딩에서 VLA와 의료 LLM 레드팀까지</b>
+      <p>능력을 끌어내는 기술과 의도한 범위에 묶어 두는 기술이<br>번갈아 병목이 되어 온 과정</p>
+    </div>
+    <p class="note rv">「억제와 레드티밍의 역사」 보고서 확장판 · 그림은 모두 개념도 · xreal-cv-ai-agent-community 1주차</p>
+    <div class="btns rv">
+      <a class="btn primary" href="#summary">강의 시작 ↓</a>
+      <a class="btn" href="animations.html">32개 장면 애니메이션</a>
+      <a class="btn" href="slides-v0.4.pdf">장표 PDF</a>
+    </div>
+  </section>
+
+  <!-- 00 요약 -->
+  <section class="sec" id="summary">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">요약</span><span>이 강의의 줄기</span></div>
+      <h2>언어 모델의 역사는 끌어내기와 묶어 두기가 번갈아 병목이 된 과정이다</h2>
+    </div>
+    <div class="panel thick rv" style="margin-top:28px">
+      <p style="margin:0;font-size:17px">임베딩, 어텐션, 대규모 사전학습이 능력을 만들었고 프롬프트 엔지니어링은 그 능력을 끌어내는 기술로 출발했다. 2023년까지 사용자는 "단계별로 생각하라" 같은 문구로 부족한 부분을 메웠지만, 2025~2026년 OpenAI와 Anthropic의 공식 가이드는 독려 문구를 줄이고 범위를 정하라고 권한다. 병목이 <b>능력 부족에서 능력 과잉으로</b> 옮겨갔기 때문이다.</p>
+    </div>
+    <div class="grid g3">
+      <div class="stat rv"><div class="big" data-count="0.001" data-dec="3" data-suf="%">0.001%</div><h4>학습 토큰을 오정보로 바꾼 비율</h4><p>이것만으로 해로운 출력이 늘었다 (Alber 외, 2025)</p></div>
+      <div class="stat rv"><div class="big">영상 속 지시</div><h4>VLM이 병변을 놓치게 유도</h4><p>종양학 영상에 숨긴 지시 (Clusmann 외, 2025)</p></div>
+      <div class="stat rv"><div class="big"><span data-count="50">50</span>~<span data-count="82" data-suf="%">82%</span></div><h4>허위 세부정보를 사실처럼 부연한 비율</h4><p>임상 사례 300개, 6개 모델 (Omar 외, 2025)</p></div>
+    </div>
+    <div class="redline rv"><b>레드티밍</b><p>레드티밍은 같은 메커니즘을 반대 방향에서 다룬다. 퓨샷 학습은 many-shot 탈옥이, 자동 프롬프트 최적화는 GCG가, 도구 사용은 간접 프롬프트 인젝션이 되었다. "LLM을 오작동시키는 기술"은 결함을 찾아 고치는 절차의 수단 중 하나다.</p></div>
+  </section>
+
+  <!-- 01 언어 모델 -->
+  <section class="sec" id="lm">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">01 언어 모델</span><span>그림 1 · 언어 모델의 계보</span></div>
+      <h2>통계 모델에서 멀티모달·추론 모델까지 여섯 시기를 거쳤다</h2>
+      <p>연도를 누르면 그 시기의 핵심이 나온다. ‘자동 재생’을 누르면 1948년부터 차례로 넘어간다.</p>
+    </div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">연표</span><strong>언어 모델의 계보</strong><span class="hint">← → 키로도 이동</span></div>
+      <div class="demo-b">
+        <div class="tl" id="tl" role="tablist" aria-label="연도"></div>
+        <div class="eras" id="eras"><span>통계·순환망</span><span>분산 표현</span><span>어텐션</span><span>사전학습</span><span>대규모화·정렬</span><span>멀티모달·추론</span></div>
+        <div class="tl-card" id="tlCard" aria-live="polite"></div>
+        <div class="tl-ctl"><button class="btn" id="tlPrev" type="button">← 이전</button><button class="btn primary" id="tlPlay" type="button">자동 재생</button><button class="btn" id="tlNext" type="button">다음 →</button></div>
+      </div>
+      <div class="demo-f">가로축 간격은 사건 순서이며 시간 비례가 아니다. 섀넌 1948과 GPT-1 2018은 원문에서 (미검증)으로 표시된 항목이다.</div>
+    </div>
+
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">실습</span><strong>n-gram은 앞의 n−1개 단어만 보고 다음 단어의 확률을 센다</strong><span class="hint">막대 옆 슬라이더로 말뭉치 횟수를 바꿔 보기</span></div>
+      <div class="demo-b">
+        <div class="ng-ctx">
+          <div class="wbox dash"><b>나는</b><span>보지 않음</span></div>
+          <div class="wbox dash"><b>어제</b><span>보지 않음</span></div>
+          <div class="wbox"><b>학교에서</b><span>문맥 w(t−2)</span></div>
+          <div class="wbox"><b>밥을</b><span>문맥 w(t−1)</span></div>
+          <div class="wbox solid pulse"><b id="ngPick">?</b><span>예측할 w(t)</span></div>
+        </div>
+        <p class="cap">트라이그램(n = 3)의 문맥은 앞의 2단어. 이보다 앞의 단어는 계산에 쓰지 않는다 (마르코프 가정).</p>
+        <div class="bars" id="ngBars"></div>
+        <label class="toggle"><input type="checkbox" id="ngSmooth"> 스무딩(add-1) 켜기 · 본 적 없는 ‘버렸다’에도 확률을 나눠 준다</label>
+        <div class="formula" id="ngF">P(먹었다 | 학교에서, 밥을) = C(학교에서 밥을 먹었다) ÷ C(학교에서 밥을) = 60 ÷ 100 = 0.60</div>
+      </div>
+      <div class="demo-f">예시 값. C(·)는 학습 말뭉치에서 그 단어열이 나온 횟수다.</div>
+    </div>
+
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">실습</span><strong>n을 키울 때의 문제 · 차원의 저주</strong></div>
+      <div class="demo-b">
+        <div class="boom">
+          <div><div class="kicker">n = <span id="nVal">3</span> · 어휘 10,000개</div><div class="val" id="nBig">10<sup>12</sup></div></div>
+          <div><input type="range" min="1" max="8" value="3" id="nRange" aria-label="n 값"><div class="logbar"><i id="nBar"></i></div></div>
+        </div>
+        <p class="cap">가능한 단어열 수는 어휘 크기의 n제곱으로 늘어난다. 늘어난 조합 대부분이 말뭉치에 나오지 않아 데이터가 감당하지 못한다. 신경망 언어 모델(NPLM, Bengio 외 2003)은 단어마다 연속 벡터를 학습해 이 문제를 풀었다. "고양이가 소파에서 잔다"를 배운 모델이 "강아지가 소파에서 잔다"에도 높은 확률을 준다.</p>
+      </div>
+    </div>
+
+    <div class="tscroll rv">
+      <table class="tbl">
+        <thead><tr><th>구조</th><th>시기</th><th>핵심</th><th>남은 문제</th></tr></thead>
+        <tbody>
+          <tr><td>RNN</td><td>2010년대 초중반</td><td>단어를 하나씩 읽으며 은닉 상태 갱신</td><td>긴 문장에서 기울기 소실</td></tr>
+          <tr><td>LSTM</td><td>Neural Computation 1997</td><td>게이트로 정보를 남기거나 지움</td><td>순차 계산이라 병렬화가 어려움</td></tr>
+          <tr><td>seq2seq</td><td>arXiv 1409.3215, 2014.09</td><td>인코더가 문장 전체를 고정 길이 벡터로 압축</td><td>고정 길이 병목</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <a class="anim-link rv" href="animations.html#lm">▶ 애니메이션으로 보기 · n-gram, NPLM, RNN, LSTM, word2vec</a><br>
+    <button class="btn done-btn" type="button" data-done="w1:lm"></button>
+  </section>
+
+  <!-- 02 어텐션 -->
+  <section class="sec" id="att">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 어텐션</span><span>그림 3 · 셀프 어텐션의 계산</span></div>
+      <h2>각 토큰은 쿼리로 다른 토큰의 키와 유사도를 구해 값을 가중합한다</h2>
+      <p>어텐션은 입력을 벡터 하나로 압축할 필요를 없앴다. 아래 단계를 하나씩 눌러 ‘지쳐서’가 어디에 주목하는지 따라가 보자.</p>
+    </div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">실습</span><strong>‘지쳐서’가 주목하는 곳</strong><span class="hint">단계 버튼 또는 ‘재생’</span></div>
+      <div class="demo-b">
+        <div class="toks" id="toks"></div>
+        <div class="att-steps" id="attSteps" role="tablist"></div>
+        <p class="att-say" id="attSay" aria-live="polite"></p>
+        <div class="btns" style="margin-top:6px"><button class="btn primary" id="attPlay" type="button">재생</button></div>
+        <div class="formula">Attention(Q, K, V) = softmax(QKᵀ / √dₖ) · V &nbsp;(Vaswani 외, 2017)</div>
+      </div>
+      <div class="demo-f">가중치는 장표와 같은 예시 값이다. 점수는 그 가중치가 나오도록 거꾸로 맞춘 설명용 값이다. 멀티헤드 어텐션은 이 계산을 h개 헤드에서 병렬로 수행한다.</div>
+    </div>
+
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">그림 4</span><strong>같은 트랜스포머 블록이 마스크와 목표에 따라 세 갈래로 나뉘었다</strong></div>
+      <div class="demo-b">
+        <div class="chips" role="tablist" id="maskTabs">
+          <button class="chip" role="tab" data-m="bert" aria-selected="true">인코더 전용 · BERT</button>
+          <button class="chip" role="tab" data-m="gpt" aria-selected="false">디코더 전용 · GPT 계열</button>
+          <button class="chip" role="tab" data-m="t5" aria-selected="false">인코더-디코더 · T5</button>
+        </div>
+        <div class="mask-wrap">
+          <div><div class="mgrid" id="mgrid"></div><div class="mlegend"><span class="a">볼 수 있음</span><span class="b">교차 어텐션</span><span class="c">가려짐</span></div></div>
+          <div class="minfo" id="minfo" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="demo-f">격자의 행은 ‘보는 토큰’, 열은 ‘보이는 토큰’이다. T5의 과제 접두어는 프롬프트의 직접적인 전신이다.</div>
+    </div>
+
+    <div class="tscroll rv">
+      <table class="tbl">
+        <thead><tr><th>연구</th><th>출처</th><th>보고한 내용</th></tr></thead>
+        <tbody>
+          <tr><td>스케일링 법칙 (Kaplan 외)</td><td>arXiv 2001.08361, 2020.01</td><td>손실이 파라미터 수, 데이터 양, 연산량에 대해 거듭제곱 법칙으로 줄어든다</td></tr>
+          <tr><td>GPT-3</td><td>arXiv 2005.14165, 2020</td><td>1,750억 파라미터에서 미세조정 없이 프롬프트 속 예시만으로 새 과제를 수행 (인컨텍스트 학습)</td></tr>
+          <tr><td>Chinchilla (Hoffmann 외)</td><td>arXiv 2203.15556, 2022.03</td><td>같은 연산 예산에서는 모델 크기와 학습 토큰 수를 같은 비율로 늘리는 것이 최적</td></tr>
+          <tr><td>InstructGPT (Ouyang 외)</td><td>arXiv 2203.02155, 2022.03</td><td>시연과 선호 비교로 미세조정하는 RLHF. 평가자들이 13억 InstructGPT를 1,750억 GPT-3보다 선호</td></tr>
+          <tr><td>ChatGPT</td><td>2022.11 공개</td><td>RLHF를 대화형으로 다듬어 LLM이 연구실 밖으로 나왔다</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="redline rv"><b>전환점</b><p>여기서부터 프롬프트 엔지니어링과 레드티밍이 본격적으로 시작된다.</p></div>
+    <a class="anim-link rv" href="animations.html#att">▶ 애니메이션으로 보기 · seq2seq 병목, 셀프 어텐션, Transformer, 세 갈래</a><br>
+    <button class="btn done-btn" type="button" data-done="w1:att"></button>
+  </section>
+
+  <!-- 03 프롬프트 -->
+  <section class="sec" id="prompt">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 프롬프트</span><span>프롬프트 방법론 한눈에 보기</span></div>
+      <h2>강의에서 다루는 열여덟 가지 방법론과 원본 논문</h2>
+      <p>묶음을 골라 걸러 보고, 카드를 누르면 핵심 문장과 원본 논문이 나온다.</p>
+    </div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">18</span><strong>방법론 카드</strong><span class="hint" id="pmCount">18개 표시</span></div>
+      <div class="demo-b">
+        <div class="chips" id="pmFilter"></div>
+        <div class="pm-grid" id="pmGrid"></div>
+        <div class="pm-detail" id="pmDetail" aria-live="polite"></div>
+      </div>
+      <div class="demo-f">각 장의 예시 프롬프트와 출력 예는 강의용으로 새로 작성한 것이다. 논문의 수치는 arXiv 초록이나 학회 페이지에서 확인한 값만 옮겼다.</div>
+    </div>
+
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">그림 6</span><strong>추론 패턴은 하나의 사슬에서 탐색과 도구 행동의 반복으로 넓어졌다</strong></div>
+      <div class="demo-b">
+        <div class="chips" role="tablist" id="flowTabs"></div>
+        <div class="flow" id="flow" style="margin-top:20px"></div>
+        <p class="say" id="flowSay"></p>
+      </div>
+    </div>
+
+    <div class="sec-head rv" style="margin-top:44px">
+      <div class="eyebrow"><span class="tag">03 프롬프트</span><span>부스터에서 브레이크로</span></div>
+      <h2 style="font-size:clamp(22px,3.2vw,32px)">2025~2026년 공식 가이드는 독려 문구를 빼고 범위를 정하라고 권한다</h2>
+    </div>
+    <div class="rv">
+      <div class="switch" id="bbSwitch"><button type="button" aria-pressed="true" data-v="both">둘 다 보기</button><button type="button" aria-pressed="false" data-v="old">2023년</button><button type="button" aria-pressed="false" data-v="new">2025~2026년</button></div>
+      <div class="bb" id="bb">
+        <div class="old"><h4>2023년 · 강한 독려 문구의 유행</h4>
+          <pre>심호흡을 하고 단계별로 생각해.
+이건 내 경력에 매우 중요해.
+CRITICAL: You MUST be THOROUGH.</pre>
+          <ul class="sq"><li>OPRO의 "심호흡" 문구</li><li>EmotionPrompt (arXiv 2307.11760, 미검증): "내 경력에 매우 중요하다" 같은 감정 자극</li><li>Principled Instructions (arXiv 2312.16171): 26개 원칙</li></ul></div>
+        <div class="new"><h4>2025~2026년 · 줄이고 범위를 정하라</h4>
+          <pre>이 PR의 변경 이유를 3문장으로 요약하라.
+범위: 변경된 파일과 그 이유만.
+확실하지 않으면 "확인 필요"라고 적는다.</pre>
+          <ul class="sq"><li>GPT-4.1 가이드(2025.04): 지시를 더 면밀하고 문자 그대로 따르도록 학습됨</li><li>GPT-5 가이드(2025.08): "Prompting for less eagerness" 절</li><li>Anthropic: "CRITICAL: You MUST…" 같은 공격적 문구가 도구 과잉 호출을 일으킬 수 있으니 평범한 문구로</li></ul></div>
+      </div>
+      <p class="cap">위 두 프롬프트는 강의용으로 새로 쓴 예시다.</p>
+    </div>
+    <div class="redline rv"><b>판정</b><p>이 변화는 "끌어내기에서 억제로"보다 <b>조향성·통제 가능성으로의 이동</b>으로 부르는 편이 정확하다. 억제는 HHH 정렬, RLHF처럼 모델 개발 층에서 처음부터 중심이었고, 끌어내기는 추론 학습과 test-time compute로 모델 안에 들어갔다.</p></div>
+    <a class="anim-link rv" href="animations.html#pr">▶ 애니메이션으로 보기 · Zero-shot부터 APE·OPRO까지 19개 장면</a><br>
+    <button class="btn done-btn" type="button" data-done="w1:prompt"></button>
+  </section>
+
+  <!-- 04 VLM · VLA -->
+  <section class="sec" id="vlm">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 VLM</span><span>그림 7 · VLM의 일반 구조</span></div>
+      <h2>VLM은 이미지를 시각 토큰으로 바꿔 텍스트와 같은 시퀀스로 읽는다</h2>
+      <p>연결 모듈을 바꿔 보면 시각 정보를 LLM에 넣는 방식이 달라진다.</p>
+    </div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">실습</span><strong>VLM 파이프라인</strong>
+        <div class="chips" id="connTabs" style="margin-left:auto">
+          <button class="chip" data-c="0" aria-pressed="true">투영(MLP) · LLaVA</button>
+          <button class="chip" data-c="1" aria-pressed="false">Q-Former · BLIP-2</button>
+          <button class="chip" data-c="2" aria-pressed="false">리샘플러 · Flamingo</button>
+        </div>
+      </div>
+      <div class="demo-b">
+        <div class="pipe" id="vlmPipe">
+          <div class="st"><b>이미지</b><span>X-ray 영상</span></div><div class="ar">→</div>
+          <div class="st"><b>패치 분할</b><span>예: 16×16</span></div><div class="ar">→</div>
+          <div class="st"><b>비전 인코더</b><span>ViT / CLIP</span></div><div class="ar">→</div>
+          <div class="st"><b id="connName">투영(MLP)</b><span id="connSub">LLaVA</span></div><div class="ar">→</div>
+          <div class="st"><b>LLM (디코더)</b><span>시각 + 텍스트 토큰</span></div><div class="ar">→</div>
+          <div class="st solid"><b>출력</b><span>"폐렴 소견이 보입니다…"</span></div>
+        </div>
+        <p class="say" id="vlmSay"></p>
+        <div class="btns" style="margin-top:8px"><button class="btn primary" id="vlmPlay" type="button">흐름 재생</button></div>
+      </div>
+      <div class="demo-f">CLIP은 4억 개 이미지-텍스트 쌍을 대조 학습해 두 모달리티를 같은 임베딩 공간에 둔다. 가장 단순한 선형 투영(LLaVA)이 가장 널리 퍼졌다.</div>
+    </div>
+
+    <div class="sec-head rv" style="margin-top:44px">
+      <div class="eyebrow"><span class="tag">04 VLA</span><span>그림 8 · VLA의 작동 원리</span></div>
+      <h2 style="font-size:clamp(22px,3.2vw,32px)">VLA는 VLM이 보고 이해한 것을 로봇 행동으로 출력한다</h2>
+    </div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">실습</span><strong>행동 출력 방식</strong>
+        <div class="chips" id="actTabs" style="margin-left:auto">
+          <button class="chip" data-a="0" aria-pressed="true">이산 행동 토큰 · RT-2, OpenVLA</button>
+          <button class="chip" data-a="1" aria-pressed="false">연속 행동 생성 · π0</button>
+        </div>
+      </div>
+      <div class="demo-b">
+        <div class="pipe" id="vlaPipe">
+          <div class="st"><b>카메라 영상</b><span>+ 언어 지시</span><span>"빨간 컵을 집어"</span></div><div class="ar">→</div>
+          <div class="st"><b>VLM 백본</b><span>웹 규모 이미지·텍스트로 사전학습된 지식</span></div><div class="ar">→</div>
+          <div class="st"><b id="actName">이산 행동 토큰</b><span id="actSub">각 차원을 256 구간으로 나눠 텍스트처럼 자기회귀 생성</span></div><div class="ar">→</div>
+          <div class="st solid"><b>로봇 제어</b><span>Δx, Δy, Δz, 회전, 그리퍼</span></div><div class="ar">↺</div>
+          <div class="st"><b>새 관측</b><span>환경이 바뀌면 다시 추론 (폐루프 제어)</span></div>
+        </div>
+        <p class="say" id="vlaSay"></p>
+      </div>
+      <div class="demo-f">핵심 아이디어: 로봇 행동을 ‘또 하나의 언어’로 취급하면, 웹에서 배운 의미 지식이 처음 보는 물체·지시로 일반화되는 데 쓰인다.</div>
+    </div>
+    <div class="tscroll rv">
+      <table class="tbl">
+        <thead><tr><th>모델</th><th>출처</th><th>핵심</th><th>보고 수치</th></tr></thead>
+        <tbody>
+          <tr><td>RT-1</td><td>arXiv 2212.06817, 2022.12</td><td>트랜스포머 정책</td><td>로봇 13대, 17개월, 시연 약 13만 개</td></tr>
+          <tr><td>RT-2</td><td>arXiv 2307.15818, CoRL 2023</td><td>VLA라는 이름 등장. 행동을 텍스트 토큰으로</td><td>6자유도 변위와 그리퍼를 256개 구간 토큰으로</td></tr>
+          <tr><td>OpenVLA</td><td>arXiv 2406.09246, CoRL 2024</td><td>70억 파라미터 공개 VLA</td><td>29개 과제에서 RT-2-X(550억)보다 성공률 절대값 16.5% 높음</td></tr>
+          <tr><td>π0</td><td>arXiv 2410.24164, 2024.10</td><td>행동 전문가 약 3억 + flow matching</td><td>전체 33억 파라미터, 최대 50Hz 제어</td></tr>
+          <tr><td>GR00T N1</td><td>arXiv 2503.14734, 2025.03</td><td>System 2 비전-언어 + System 1 디퓨전 트랜스포머</td><td>휴머노이드용, 끝단까지 함께 학습</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="redline rv"><b>안전이 다른 이유</b><p>VLA의 출력은 물리적 행동이라 사람이 걸러낼 기회가 없다. 텍스트 LLM의 탈옥 기법이 로봇 제어로 그대로 옮겨갈 수 있다.</p></div>
+    <a class="anim-link rv" href="animations.html#vlm">▶ 애니메이션으로 보기 · VLM, ViT, CLIP, 연결 모듈, VLA</a><br>
+    <button class="btn done-btn" type="button" data-done="w1:vlm"></button>
+  </section>
+
+  <!-- 05 레드티밍 -->
+  <section class="sec" id="redteam">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag red">05 레드티밍</span><span>레드티밍이란 무엇인가</span></div>
+      <h2>오작동시키는 방법은 레드티밍의 수단일 뿐 목적이 아니다</h2>
+    </div>
+    <div class="panel thick rv" style="margin-top:28px">
+      <p style="margin:0;font-size:17px"><b>이 강의의 정의.</b> 레드티밍은 승인된 팀이 적대자의 관점을 취해 AI 시스템의 결함·취약점·위험 능력을 체계적으로 찾아내고, 이를 문서화해 완화로 연결하는 구조화된 시험이다. 의도와 다른 오작동을 유발하는 공격 기법은 그 주된 수단 중 하나다.</p>
+    </div>
+
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag red">그림 10</span><strong>공격면은 학습 시점(가중치)과 추론 시점(입력·도구)으로 나뉜다</strong><span class="hint">열을 누르면 그 단계만 강조</span></div>
+      <div class="demo-b">
+        <div class="phase"><span>학습 시점 →</span><span>→ 추론 시점</span></div>
+        <div class="surf" id="surf"></div>
+      </div>
+      <div class="demo-f">■ 위협 · □ 방어. 각 칸의 위협이 실제로 성립하는지 승인된 시험으로 확인하고, 결과를 방어 설계로 되돌리는 절차가 레드티밍의 자리다.</div>
+    </div>
+
+    <div class="acc rv" id="acc"></div>
+    <p class="cap rv">NIST AI 100-2 E2025와 OWASP LLM Top 10 2025(프롬프트 인젝션 1위)를 바탕으로 정리했다. 공격 기법은 개념과 연구 결과만 다룬다.</p>
+
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag red">그림 11</span><strong>능력을 끌어내는 메커니즘은 예외 없이 공격면이 되었다</strong><span class="hint">행을 누르거나 ‘자동 재생’</span></div>
+      <div class="demo-b">
+        <table class="coevo" id="coevo">
+          <thead><tr><th>끌어낸 능력</th><th></th><th style="color:var(--accent)">열린 공격면</th><th></th><th>대응한 억제·조향</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="btns" style="margin-top:8px"><button class="btn primary" id="coPlay" type="button">자동 재생</button></div>
+      </div>
+      <div class="demo-f">공격에 대한 대응은 다시 억제·조향 수단이 되었다. 같은 메커니즘의 세 얼굴이다.</div>
+    </div>
+    <button class="btn done-btn" type="button" data-done="w1:redteam"></button>
+  </section>
+
+  <!-- 06 결론 -->
+  <section class="sec concl" id="conclusion">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">결론</span><span>1주차 정리</span></div>
+      <h2>능력이 커질 때마다 조향의 정밀도에 대한 요구도 함께 커진다</h2>
+      <p>VLM은 이미지를, VLA는 행동을 토큰으로 바꿨다. 레드티밍은 이 확장의 매 단계를 반대 방향에서 따라왔으므로 "끌어내기에서 억제로"라는 시대 구분보다 공진화 모델이 증거에 더 잘 맞는다.</p>
+    </div>
+    <div class="grid g3">
+      <div class="panel rv"><span class="n">1</span><h3>절차로서의 레드티밍</h3><p style="margin:0">모델을 깨는 기술이 아니라 결함을 찾아 고치는 절차로 다뤄야 위협 모델, 문서화, 완화라는 산출물이 남는다.</p></div>
+      <div class="panel rv"><span class="n">2</span><h3>시스템 설계로 내려간 억제</h3><p style="margin:0">적응형 공격이 방어 대부분을 무력화했으므로 억제는 권한·격리·정보 흐름 설계로 내려가야 한다. VLA에서는 더 엄격해야 한다.</p></div>
+      <div class="panel rv"><span class="n">3</span><h3>의료 평가의 보완</h3><p style="margin:0">데이터 무결성, 오류가 섞인 일상 입력, 형평성, 모델 버전 간 회귀를 함께 시험하는 레드티밍으로 벤치마크를 보완해야 한다.</p></div>
+    </div>
+    <div class="next rv"><b>다음 과제</b><p>sandbagging과 평가 인식이 보여 주듯 시험받는 모델이 시험을 알아챌 수 있다면, 관찰이 행동을 바꾸지 않는 측정 방법을 찾는 일이 다음 과제가 된다.</p></div>
+    <div class="btns rv">
+      <a class="btn primary" href="animations.html">32개 장면 애니메이션 보기</a>
+      <a class="btn" href="slides-v0.4.pdf">장표 PDF 내려받기</a>
+      <a class="btn" href="../">코스 홈으로</a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><strong>XREAL CV · AI Agent Community</strong> · <span class="domain">qnftk020.github.io/xreal-cv-ai-agent-community</span> · WEEK 01</p>
+    <p>원본 장표: 「LLM의 역사와 작동 원리, 그리고 레드티밍」 v0.4 · 기준일 2026. 10. 25. 모든 그림은 개념도이며 ‘예시 값’으로 표시한 수치는 설명용이다.</p>
+  </div>
+</footer>
+
+<script src="../assets/common.js"></script>
+<script src="week1.js"></script>
+</body>
+</html>

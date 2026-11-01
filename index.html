@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>XREAL CV · AI Agent Community — 3주 강의</title>
+<meta name="description" content="xreal-cv-ai-agent-community 3주 강의. 1주차: LLM의 역사와 작동 원리, 그리고 레드티밍.">
+<meta property="og:title" content="XREAL CV · AI Agent Community — 3주 강의">
+<meta property="og:description" content="LLM · VLM · VLA · 레드티밍에서 AI 에이전트까지">
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.domainbox{display:flex;flex-wrap:wrap;align-items:stretch;border:2px solid var(--ink);margin-top:30px;max-width:900px}
+.domainbox span{background:var(--ink);color:#fff;font-weight:700;font-size:13px;letter-spacing:.1em;padding:12px 18px;display:flex;align-items:center}
+.domainbox code{flex:1;min-width:0;font-family:var(--mono);font-size:clamp(13px,1.9vw,17px);padding:12px 18px;overflow-x:auto;white-space:nowrap}
+.domainbox button{border:0;border-left:2px solid var(--ink);background:var(--bg);font-weight:700;font-size:13px;padding:0 18px;cursor:pointer}
+.domainbox button:hover{color:var(--accent)}
+
+/* 주차 트랙 */
+.track{position:relative;margin-top:36px}
+.track::before{content:"";position:absolute;left:0;right:0;top:27px;height:2px;background:var(--ink)}
+.weeks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;position:relative}
+.wk{display:flex;flex-direction:column}
+.wk .pin{align-self:flex-start;background:var(--ink);color:#fff;font-weight:800;font-size:15px;padding:14px 18px;line-height:1;position:relative;z-index:1}
+.wk.lock .pin{background:var(--bg);color:var(--sub);border:2px dashed var(--sub)}
+.wk .card{margin-top:18px;flex:1;display:flex;flex-direction:column;border:3px solid var(--ink);padding:22px;text-decoration:none;color:inherit;transition:transform .2s,box-shadow .2s;background:var(--bg)}
+a.card:hover{transform:translate(-5px,-5px);box-shadow:8px 8px 0 var(--accent)}
+.wk.lock .card{border:2px dashed var(--sub);color:var(--sub)}
+.wk .state{font-size:12px;font-weight:800;letter-spacing:.1em}
+.wk .state.now{color:var(--accent)}
+.wk h3{font-size:23px;font-weight:800;line-height:1.3;margin:10px 0 12px}
+.wk p{margin:0 0 16px;font-size:15px}
+.wk .tops{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.wk .tops i{font-style:normal;font-size:12.5px;font-weight:700;border:1.5px solid currentColor;padding:2px 9px}
+.meter{margin-top:18px}
+.meter .lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
+.meter .bar{height:10px;border:2px solid var(--ink);margin-top:6px}
+.meter .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .6s}
+.go{margin-top:16px;font-weight:800}
+a.card:hover .go{color:var(--accent)}
+@media (max-width:860px){.weeks{grid-template-columns:1fr}.track::before{display:none}}
+
+/* 1주차 미리보기 */
+.peek{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:0;border:3px solid var(--ink);margin-top:28px}
+.peek a{display:block;padding:18px 20px;text-decoration:none;border-right:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transition:background .15s,color .15s}
+.peek a:hover{background:var(--ink);color:#fff}
+.peek b{display:block;font-size:12px;letter-spacing:.1em;color:var(--accent)}
+.peek strong{display:block;font-size:18px;font-weight:800;margin:4px 0}
+.peek span{font-size:13.5px}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="./"><span class="mark">XR</span><span>XREAL CV · AI Agent Community<br><small>XREAL-CV-AI-AGENT-COMMUNITY</small></span></a>
+    <nav class="topnav" aria-label="주차">
+      <a href="./" aria-current="page">코스 홈</a>
+      <a href="week1/">1주차</a>
+      <a href="week2/" class="locked">2주차</a>
+      <a href="week3/" class="locked">3주차</a>
+    </nav>
+  </div>
+  <div class="readbar"></div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="rv"><span class="tag line">XREAL · CV · AI AGENT COMMUNITY · 3주 강의</span></div>
+    <h1 class="rv">LLM에서 AI 에이전트까지,<br>3주 강의</h1>
+    <div class="slab rv">
+      <b>지금은 1주차 · LLM의 역사와 작동 원리, 그리고 레드티밍</b>
+      <p>능력을 끌어내는 기술과 의도한 범위에 묶어 두는 기술이<br>번갈아 병목이 되어 온 과정을 따라간다</p>
+    </div>
+    <div class="domainbox rv">
+      <span>DOMAIN</span>
+      <code id="dom">https://qnftk020.github.io/xreal-cv-ai-agent-community/</code>
+      <button type="button" id="copy">복사</button>
+    </div>
+    <div class="btns rv">
+      <a class="btn primary" href="week1/">1주차 강의 시작 →</a>
+      <a class="btn" href="week1/animations.html">32개 장면 애니메이션</a>
+      <a class="btn" href="week1/slides-v0.4.pdf">장표 PDF (69쪽)</a>
+    </div>
+  </section>
+
+  <section class="sec" id="weeks">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">커리큘럼</span><span>3주 진행 · 주차마다 순서대로 열린다</span></div>
+      <h2>한 주에 한 장씩 열린다</h2>
+      <p>1주차 강의가 열려 있다. 2·3주차는 강의 당일 공개된다. 각 장 끝의 ‘다 봤어요’를 누르면 진도가 이 브라우저에 저장된다.</p>
+    </div>
+    <div class="track">
+      <div class="weeks">
+        <div class="wk rv">
+          <span class="pin">WEEK 01</span>
+          <a class="card" href="week1/">
+            <span class="state now">● 진행 중</span>
+            <h3>LLM의 역사와 작동 원리, 그리고 레드티밍</h3>
+            <p>임베딩·어텐션에서 프롬프트 방법론 18가지, VLM·VLA, 의료 LLM 레드티밍까지.</p>
+            <div class="tops"><i>언어 모델</i><i>어텐션</i><i>프롬프트</i><i>VLM·VLA</i><i>레드티밍</i></div>
+            <div class="meter"><div class="lbl"><span>내 진도</span><span id="w1pct">0 / 5</span></div><div class="bar"><i id="w1bar"></i></div></div>
+            <span class="go">강의 열기 →</span>
+          </a>
+        </div>
+        <div class="wk lock rv">
+          <span class="pin">WEEK 02</span>
+          <div class="card">
+            <span class="state">○ 공개 예정</span>
+            <h3>2주차 강의</h3>
+            <p>강의 당일 이 자리에 열린다.</p>
+            <div class="tops"><i>준비 중</i></div>
+          </div>
+        </div>
+        <div class="wk lock rv">
+          <span class="pin">WEEK 03</span>
+          <div class="card">
+            <span class="state">○ 공개 예정</span>
+            <h3>3주차 강의</h3>
+            <p>강의 당일 이 자리에 열린다.</p>
+            <div class="tops"><i>준비 중</i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="peek">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">1주차</span><span>바로 가기</span></div>
+      <h2>1주차는 다섯 장으로 되어 있다</h2>
+    </div>
+    <div class="peek rv">
+      <a href="week1/#lm"><b>01</b><strong>언어 모델</strong><span>n-gram에서 임베딩까지</span></a>
+      <a href="week1/#att"><b>02</b><strong>어텐션</strong><span>병목을 없앤 계산</span></a>
+      <a href="week1/#prompt"><b>03</b><strong>프롬프트</strong><span>열여덟 가지 방법론</span></a>
+      <a href="week1/#vlm"><b>04</b><strong>VLM · VLA</strong><span>이미지와 행동을 토큰으로</span></a>
+      <a href="week1/#redteam"><b>05</b><strong>레드티밍</strong><span>공격면과 공진화</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><strong>XREAL CV · AI Agent Community</strong> · <span class="domain">qnftk020.github.io/xreal-cv-ai-agent-community</span></p>
+    <p>1주차 원본: 「LLM의 역사와 작동 원리, 그리고 레드티밍」 v0.4 · 기준일 2026. 10. 25 · 그림은 모두 개념도</p>
+  </div>
+</footer>
+
+<script src="assets/common.js"></script>
+<script>
+'use strict';
+/* 실제 배포 주소를 표시한다. 로컬에서 열면 기본 도메인을 보여 준다. */
+(() => {
+  const dom = document.getElementById('dom');
+  if (location.protocol.startsWith('http') && location.hostname.includes('github.io')) dom.textContent = location.origin + location.pathname.replace(/index\.html$/, '');
+  document.getElementById('copy').addEventListener('click', e => {
+    const b = e.currentTarget;
+    (navigator.clipboard ? navigator.clipboard.writeText(dom.textContent) : Promise.reject()).then(() => { b.textContent = '복사됨'; }, () => { b.textContent = '복사 실패'; });
+    setTimeout(() => { b.textContent = '복사'; }, 1400);
+  });
+  const st = XR.load();
+  const ids = ['lm', 'att', 'prompt', 'vlm', 'redteam'];
+  const n = ids.filter(i => st['w1:' + i]).length;
+  document.getElementById('w1pct').textContent = n + ' / ' + ids.length;
+  requestAnimationFrame(() => { document.getElementById('w1bar').style.width = (n / ids.length * 100) + '%'; });
+})();
+</script>
+</body>
+</html>
