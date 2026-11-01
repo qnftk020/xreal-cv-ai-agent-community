@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="../assets/style.css">
 <style>
 .secnav{border-top:1.5px solid var(--rule)}
-.secnav .wrap{display:flex;gap:4px;overflow-x:auto;min-height:40px;align-items:center;scrollbar-width:none}
+.secnav .wrap{flex-wrap:nowrap!important;display:flex;gap:4px;overflow-x:auto;min-height:40px;align-items:center;scrollbar-width:none}
 .secnav a{font-size:13px;font-weight:700;text-decoration:none;padding:4px 10px;white-space:nowrap;border:1.5px solid transparent}
 .secnav a b{color:var(--sub);font-weight:600;margin-right:6px;font-variant-numeric:tabular-nums}
 .secnav a:hover{border-color:var(--ink)}
@@ -204,10 +204,56 @@
 .concl .panel{position:relative;padding-top:56px}
 .concl .n{position:absolute;top:0;left:0;background:var(--ink);color:#fff;font-weight:800;font-size:22px;width:44px;height:44px;display:grid;place-items:center}
 .concl .panel:hover .n{background:var(--accent)}
-.next{margin-top:24px;border:3px solid var(--accent);padding:18px 22px;display:grid;grid-template-columns:120px 1fr;gap:14px}
-.next b{color:var(--accent);font-size:18px}
-.next p{margin:0}
-@media (max-width:640px){.next{grid-template-columns:1fr}}
+.nextbox{margin-top:24px;border:3px solid var(--accent);padding:18px 22px;display:grid;grid-template-columns:120px 1fr;gap:14px}
+.nextbox b{color:var(--accent);font-size:18px}
+.nextbox p{margin:0}
+@media (max-width:640px){.nextbox{grid-template-columns:1fr}}
+
+/* ---------- 페이지 넘김 ---------- */
+body.paged{padding-bottom:96px}
+.paged main > section{display:none;min-height:calc(100vh - 210px)}
+.paged main > section.cur{display:block;animation:pgin .5s cubic-bezier(.2,.7,.2,1)}
+.paged main > section.cur.back{animation-name:pgback}
+@keyframes pgin{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes pgback{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+.paged .sec{padding-top:48px}
+.paged .foot{margin-top:40px}
+.pager{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--bg);border-top:3px solid var(--ink)}
+.pager .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:16px;min-height:72px;padding-bottom:env(safe-area-inset-bottom,0px)}
+.pg-btn{display:flex;align-items:center;gap:12px;border:2px solid var(--ink);background:var(--bg);padding:8px 16px;cursor:pointer;text-align:left;justify-self:start;max-width:100%;transition:background .15s,color .15s,border-color .15s}
+.pg-btn.next{justify-self:end;text-align:right;background:var(--ink);color:#fff}
+.pg-btn .k{font-size:22px;font-weight:800;line-height:1;transition:transform .2s}
+.pg-btn .t{display:flex;flex-direction:column;min-width:0}
+.pg-btn small{font-size:11.5px;font-weight:700;letter-spacing:.08em;opacity:.7}
+.pg-btn b{font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg-btn:hover{border-color:var(--accent)}
+.pg-btn.next:hover{background:var(--accent)}
+.pg-btn:hover .k{transform:translateX(-4px)}
+.pg-btn.next:hover .k{transform:translateX(4px)}
+.pg-btn[disabled]{visibility:hidden}
+.pg-mid{text-align:center}
+.pg-count{font-size:13px;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums}
+.pg-count b{color:var(--ink);font-size:15px}
+.pg-dots{display:flex;gap:4px;justify-content:center;margin-top:6px}
+.pg-dots button{width:26px;height:8px;border:1.5px solid var(--ink);background:var(--bg);padding:0;cursor:pointer;transition:background .2s,width .2s}
+.pg-dots button.seen{background:var(--rule)}
+.pg-dots button.ok{background:var(--ink)}
+.pg-dots button.cur{background:var(--accent);border-color:var(--accent);width:40px}
+.nextcard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;margin-top:64px;border:4px solid var(--ink);padding:26px 30px;text-decoration:none;cursor:pointer;background:var(--bg);width:100%;text-align:left;transition:background .2s,color .2s,box-shadow .2s,transform .2s}
+.nextcard .lb{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--accent)}
+.nextcard .nm{font-size:clamp(24px,3.6vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.nextcard .ds{font-size:14.5px;color:var(--sub);margin-top:4px}
+.nextcard .ar{font-size:44px;font-weight:800;transition:transform .2s}
+.nextcard .no{font-size:56px;font-weight:800;line-height:1;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.nextcard:hover{background:var(--ink);color:#fff;transform:translate(-4px,-4px);box-shadow:8px 8px 0 var(--accent)}
+.nextcard:hover .ds{color:#ccc}
+.nextcard:hover .ar{transform:translateX(8px)}
+@media (max-width:700px){
+  .pager .wrap{grid-template-columns:auto 1fr auto;gap:8px;min-height:62px}
+  .pg-btn{padding:8px 12px}.pg-btn .t{display:none}
+  .pg-dots button{width:14px}.pg-dots button.cur{width:24px}
+  .nextcard{grid-template-columns:1fr auto;padding:20px}.nextcard .no{display:none}
+}
 </style>
 </head>
 <body>
@@ -223,6 +269,7 @@
   </div>
   <nav class="secnav" aria-label="장 이동">
     <div class="wrap" id="secnav">
+      <a href="#cover"><b>··</b>표지</a>
       <a href="#summary"><b>00</b>요약</a>
       <a href="#lm" data-k="lm"><b>01</b>언어 모델</a>
       <a href="#att" data-k="att"><b>02</b>어텐션</a>
@@ -237,7 +284,7 @@
 
 <main class="wrap">
   <!-- 표지 -->
-  <section class="hero">
+  <section class="hero" id="cover" data-name="표지">
     <div class="rv"><span class="tag line">WEEK 01 · LLM · VLM · VLA · 레드티밍 · 기준일 2026. 10. 25</span></div>
     <h1 class="rv">LLM의 역사와 작동 원리,<br>그리고 레드티밍</h1>
     <div class="slab rv">
@@ -246,14 +293,14 @@
     </div>
     <p class="note rv">「억제와 레드티밍의 역사」 보고서 확장판 · 그림은 모두 개념도 · xreal-cv-ai-agent-community 1주차</p>
     <div class="btns rv">
-      <a class="btn primary" href="#summary">강의 시작 ↓</a>
+      <a class="btn primary" href="#summary">강의 시작 →</a>
       <a class="btn" href="animations.html">32개 장면 애니메이션</a>
       <a class="btn" href="slides-v0.4.pdf">장표 PDF</a>
     </div>
   </section>
 
   <!-- 00 요약 -->
-  <section class="sec" id="summary">
+  <section class="sec" id="summary" data-name="요약">
     <div class="sec-head rv">
       <div class="eyebrow"><span class="tag">요약</span><span>이 강의의 줄기</span></div>
       <h2>언어 모델의 역사는 끌어내기와 묶어 두기가 번갈아 병목이 된 과정이다</h2>
@@ -270,7 +317,7 @@
   </section>
 
   <!-- 01 언어 모델 -->
-  <section class="sec" id="lm">
+  <section class="sec" id="lm" data-name="언어 모델">
     <div class="sec-head rv">
       <div class="eyebrow"><span class="tag">01 언어 모델</span><span>그림 1 · 언어 모델의 계보</span></div>
       <h2>통계 모델에서 멀티모달·추론 모델까지 여섯 시기를 거쳤다</h2>
@@ -331,7 +378,7 @@
   </section>
 
   <!-- 02 어텐션 -->
-  <section class="sec" id="att">
+  <section class="sec" id="att" data-name="어텐션">
     <div class="sec-head rv">
       <div class="eyebrow"><span class="tag">02 어텐션</span><span>그림 3 · 셀프 어텐션의 계산</span></div>
       <h2>각 토큰은 쿼리로 다른 토큰의 키와 유사도를 구해 값을 가중합한다</h2>
@@ -383,7 +430,7 @@
   </section>
 
   <!-- 03 프롬프트 -->
-  <section class="sec" id="prompt">
+  <section class="sec" id="prompt" data-name="프롬프트">
     <div class="sec-head rv">
       <div class="eyebrow"><span class="tag">03 프롬프트</span><span>프롬프트 방법론 한눈에 보기</span></div>
       <h2>강의에서 다루는 열여덟 가지 방법론과 원본 논문</h2>
@@ -434,7 +481,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
   </section>
 
   <!-- 04 VLM · VLA -->
-  <section class="sec" id="vlm">
+  <section class="sec" id="vlm" data-name="VLM · VLA">
     <div class="sec-head rv">
       <div class="eyebrow"><span class="tag">04 VLM</span><span>그림 7 · VLM의 일반 구조</span></div>
       <h2>VLM은 이미지를 시각 토큰으로 바꿔 텍스트와 같은 시퀀스로 읽는다</h2>
@@ -504,7 +551,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
   </section>
 
   <!-- 05 레드티밍 -->
-  <section class="sec" id="redteam">
+  <section class="sec" id="redteam" data-name="레드티밍">
     <div class="sec-head rv">
       <div class="eyebrow"><span class="tag red">05 레드티밍</span><span>레드티밍이란 무엇인가</span></div>
       <h2>오작동시키는 방법은 레드티밍의 수단일 뿐 목적이 아니다</h2>
@@ -540,7 +587,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
   </section>
 
   <!-- 06 결론 -->
-  <section class="sec concl" id="conclusion">
+  <section class="sec concl" id="conclusion" data-name="결론">
     <div class="sec-head rv">
       <div class="eyebrow"><span class="tag">결론</span><span>1주차 정리</span></div>
       <h2>능력이 커질 때마다 조향의 정밀도에 대한 요구도 함께 커진다</h2>
@@ -551,7 +598,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
       <div class="panel rv"><span class="n">2</span><h3>시스템 설계로 내려간 억제</h3><p style="margin:0">적응형 공격이 방어 대부분을 무력화했으므로 억제는 권한·격리·정보 흐름 설계로 내려가야 한다. VLA에서는 더 엄격해야 한다.</p></div>
       <div class="panel rv"><span class="n">3</span><h3>의료 평가의 보완</h3><p style="margin:0">데이터 무결성, 오류가 섞인 일상 입력, 형평성, 모델 버전 간 회귀를 함께 시험하는 레드티밍으로 벤치마크를 보완해야 한다.</p></div>
     </div>
-    <div class="next rv"><b>다음 과제</b><p>sandbagging과 평가 인식이 보여 주듯 시험받는 모델이 시험을 알아챌 수 있다면, 관찰이 행동을 바꾸지 않는 측정 방법을 찾는 일이 다음 과제가 된다.</p></div>
+    <div class="nextbox rv"><b>다음 과제</b><p>sandbagging과 평가 인식이 보여 주듯 시험받는 모델이 시험을 알아챌 수 있다면, 관찰이 행동을 바꾸지 않는 측정 방법을 찾는 일이 다음 과제가 된다.</p></div>
     <div class="btns rv">
       <a class="btn primary" href="animations.html">32개 장면 애니메이션 보기</a>
       <a class="btn" href="slides-v0.4.pdf">장표 PDF 내려받기</a>
@@ -559,6 +606,14 @@ CRITICAL: You MUST be THOROUGH.</pre>
     </div>
   </section>
 </main>
+
+<nav class="pager" id="pager" aria-label="페이지 넘기기">
+  <div class="wrap">
+    <button class="pg-btn" id="pgPrev" type="button"><span class="k">←</span><span class="t"><small>이전</small><b id="pgPrevName"></b></span></button>
+    <div class="pg-mid"><div class="pg-count"><b id="pgNum">01</b> / <span id="pgTot">08</span> · <span id="pgName"></span></div><div class="pg-dots" id="pgDots"></div></div>
+    <button class="pg-btn next" id="pgNext" type="button"><span class="t"><small>다음</small><b id="pgNextName"></b></span><span class="k">→</span></button>
+  </div>
+</nav>
 
 <footer class="foot">
   <div class="wrap">

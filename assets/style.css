@@ -115,3 +115,4 @@ ul.sq li::before{content:"";position:absolute;left:2px;top:.62em;width:9px;heigh
 .foot strong{color:var(--ink)}
 .domain{font-family:var(--mono);font-size:13px;background:var(--soft);padding:2px 8px;color:var(--ink)}
 @media (max-width:640px){.formula{white-space:normal}.tscroll .tbl{min-width:620px}.hero{padding-top:44px}}
+@media (max-width:640px){.brand small{display:none}.topbar .wrap{min-height:48px;gap:8px}.topnav{margin-left:auto}.topnav a{padding:4px 7px;font-size:12.5px}.brand{font-size:14px}}

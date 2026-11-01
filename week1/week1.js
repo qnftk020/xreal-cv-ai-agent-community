@@ -4,17 +4,87 @@ const $ = id => document.getElementById(id);
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-/* ---------- 장 이동: 현재 위치 강조 · 완료 표시 ---------- */
-(() => {
+/* ---------- 페이지 넘김: 한 번에 한 장씩, 다음 버튼 · ←/→ 키 · 주소(#lm) 동기화 ---------- */
+const PAGER = (() => {
+  const pages = [...document.querySelectorAll('main > section')];
   const links = [...document.querySelectorAll('#secnav a')];
-  const secs = links.map(a => document.querySelector(a.getAttribute('href')));
-  const spy = () => {
-    let cur = 0;
-    secs.forEach((s, i) => { if (s && s.getBoundingClientRect().top < 140) cur = i; });
-    links.forEach((a, i) => a.classList.toggle('on', i === cur));
-  };
-  addEventListener('scroll', spy, { passive: true }); spy();
-  XR.doneButtons(st => links.forEach(a => a.dataset.k && a.classList.toggle('ok', !!st['w1:' + a.dataset.k])));
+  const DESC = { cover: '1주차 표지', summary: '이 강의의 줄기', lm: '통계 모델에서 단어 벡터까지', att: '병목을 없앤 계산', prompt: '열여덟 가지 방법론', vlm: '이미지와 행동을 토큰으로', redteam: '공격면과 공진화', conclusion: '1주차 정리' };
+  const name = i => pages[i].dataset.name;
+  const pad = n => String(n).padStart(2, '0');
+  const seen = new Set();
+  let cur = -1;
+  document.body.classList.add('paged');
+  $('pgTot').textContent = pad(pages.length);
+
+  /* 각 장 끝에 다음 장 카드 */
+  pages.forEach((p, i) => {
+    const nx = pages[i + 1];
+    const c = h('button', 'nextcard rv');
+    c.type = 'button';
+    if (nx) {
+      c.innerHTML = `<span class="no">${pad(i + 2)}</span><span><span class="lb">NEXT · 다음 장</span><span class="nm" style="display:block">${name(i + 1)}</span><span class="ds" style="display:block">${DESC[nx.id] || ''}</span></span><span class="ar">→</span>`;
+      c.addEventListener('click', () => go(i + 1));
+    } else {
+      c.innerHTML = `<span class="no">✓</span><span><span class="lb">1주차 끝</span><span class="nm" style="display:block">코스 홈으로</span><span class="ds" style="display:block">2주차는 강의 당일 열린다</span></span><span class="ar">→</span>`;
+      c.addEventListener('click', () => { location.href = '../'; });
+    }
+    p.appendChild(c);
+  });
+
+  const dots = pages.map((p, i) => {
+    const d = h('button'); d.type = 'button'; d.title = pad(i + 1) + ' ' + name(i); d.setAttribute('aria-label', d.title);
+    d.addEventListener('click', () => go(i));
+    $('pgDots').appendChild(d); return d;
+  });
+
+  function go(i, opt = {}) {
+    i = Math.max(0, Math.min(pages.length - 1, i));
+    if (i === cur) return;
+    const back = i < cur;
+    cur = i; seen.add(i);
+    pages.forEach((p, j) => { p.classList.toggle('cur', j === i); p.classList.toggle('back', j === i && back); });
+    p_reveal(pages[i]);
+    links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + pages[i].id));
+    const on = links.find(a => a.classList.contains('on'));
+    if (on) on.scrollIntoView({ block: 'nearest', inline: 'center' });
+    dots.forEach((d, j) => { d.classList.toggle('cur', j === i); d.classList.toggle('seen', seen.has(j)); });
+    $('pgNum').textContent = pad(i + 1); $('pgName').textContent = name(i);
+    $('pgPrev').disabled = i === 0;
+    $('pgPrevName').textContent = i > 0 ? name(i - 1) : '';
+    $('pgNextName').textContent = i < pages.length - 1 ? name(i + 1) : '코스 홈';
+    if (!opt.noHash) history.replaceState(null, '', '#' + pages[i].id);
+    if (!opt.noScroll) window.scrollTo({ top: 0, behavior: 'instant' in document.documentElement.style ? 'instant' : 'auto' });
+  }
+  /* 숨겨져 있던 장의 등장 효과를 다시 건다 */
+  function p_reveal(p) {
+    if (XR.reduce) return;
+    p.querySelectorAll('.rv').forEach((e, k) => { e.classList.remove('in'); setTimeout(() => e.classList.add('in'), 60 + Math.min(k, 6) * 70); });
+  }
+  const idx = hash => pages.findIndex(p => '#' + p.id === hash);
+
+  $('pgPrev').addEventListener('click', () => go(cur - 1));
+  $('pgNext').addEventListener('click', () => { if (cur === pages.length - 1) location.href = '../'; else go(cur + 1); });
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const i = idx(a.getAttribute('href'));
+    if (i >= 0) { e.preventDefault(); go(i); }
+  });
+  addEventListener('hashchange', () => { const i = idx(location.hash); if (i >= 0) go(i, { noHash: true }); });
+  document.addEventListener('keydown', e => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.target.closest('input,textarea,select,[role="tablist"],.tl,[contenteditable]')) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); $('pgNext').click(); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(cur - 1); }
+  });
+
+  XR.doneButtons(st => {
+    links.forEach(a => a.dataset.k && a.classList.toggle('ok', !!st['w1:' + a.dataset.k]));
+    dots.forEach((d, j) => d.classList.toggle('ok', !!st['w1:' + pages[j].id]));
+  });
+  const start = idx(location.hash);
+  go(start >= 0 ? start : 0, { noHash: start < 0, noScroll: true });
+  return { go };
 })();
 
 /* ---------- 01 연표 ---------- */
