@@ -6,6 +6,7 @@
 <title>1주차 · LLM의 역사와 작동 원리, 그리고 레드티밍 — XREAL CV · AI Agent Community</title>
 <meta name="description" content="xreal-cv-ai-agent-community 1주차 강의. 임베딩에서 VLA와 의료 LLM 레드티밍까지.">
 <link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="scenes.css">
 <style>
 .secnav{border-top:1.5px solid var(--rule)}
 .secnav .wrap{flex-wrap:nowrap!important;display:flex;gap:4px;overflow-x:auto;min-height:40px;align-items:center;scrollbar-width:none}
@@ -255,11 +256,12 @@ body.fit{overflow:hidden;height:100vh;height:100dvh;padding-bottom:0}
 .pg-count{font-size:13px;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums}
 .pg-count b{color:var(--ink);font-size:15px}
 .pg-dots{display:flex;align-items:center;gap:3px;height:14px;justify-content:center;margin-top:6px}
-.pg-dots button{width:16px;height:8px;border:1.5px solid var(--ink);background:var(--bg);padding:0;cursor:pointer;transition:background .2s,width .2s}
+.pg-dots button{width:12px;height:8px;border:1.5px solid var(--ink);background:var(--bg);padding:0;cursor:pointer;transition:background .2s,width .2s}
 .pg-dots button.seen{background:var(--rule)}
 .pg-dots button.ok{background:var(--ink)}
 .pg-dots button.grp{height:12px}
-.pg-dots button.cur{background:var(--accent);border-color:var(--accent);width:30px}
+.pg-dots button.an{width:6px}
+.pg-dots button.cur{background:var(--accent);border-color:var(--accent);width:24px}
 .nextcard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;margin-top:64px;border:4px solid var(--ink);padding:26px 30px;text-decoration:none;cursor:pointer;background:var(--bg);width:100%;text-align:left;transition:background .2s,color .2s,box-shadow .2s,transform .2s}
 .nextcard .lb{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--accent)}
 .nextcard .nm{font-size:clamp(24px,3.6vw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
@@ -272,12 +274,34 @@ body.fit{overflow:hidden;height:100vh;height:100dvh;padding-bottom:0}
 @media (max-width:700px){
   .pager .wrap{grid-template-columns:auto 1fr auto;gap:8px;min-height:62px}
   .pg-btn{padding:8px 12px}.pg-btn .t{display:none}
-  .pg-dots button{width:14px}.pg-dots button.cur{width:24px}
+  .pg-dots{display:none}
   .nextcard{grid-template-columns:1fr auto;padding:20px}.nextcard .no{display:none}
 }
+
+/* ---------- 애니메이션 장면 슬라이드 ---------- */
+.scn{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:center}
+.scn .stage{position:relative;aspect-ratio:16/9;border:3px solid var(--ink);background:var(--bg);cursor:pointer;overflow:hidden;width:100%;margin:0 auto}
+.scn .stage svg{display:block;width:100%;height:100%;text-rendering:geometricPrecision}
+.scn .prog{position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--accent);transform-origin:0 50%;transform:scaleX(0)}
+.scn .ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
+.scn .ctl .btn{padding:6px 14px;font-size:13px}
+.scn .stp{font-size:13px;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums;margin-left:auto}
+.scn h2{font-size:clamp(24px,2.8vw,34px);font-weight:800;line-height:1.2;margin:14px 0 12px;letter-spacing:-.03em}
+.scn .cap{font-size:15px;color:var(--ink);margin:0;line-height:1.7}
+.scn .src{font-size:12.5px;color:var(--sub);margin-top:16px;border-top:1.5px solid var(--rule);padding-top:10px}
+.scn .side .eyebrow{gap:8px}
+.scn .side .tag{min-width:0}
+.fit .scn .stage{max-width:calc((100dvh - var(--top,110px) - var(--bot,76px) - 110px) * 16 / 9)}
+@media (max-width:900px){.scn{grid-template-columns:1fr;gap:14px}.scn .side{order:-1}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mka"/></marker>
+  </defs>
+</svg>
 <header class="topbar">
   <div class="wrap">
     <a class="brand" href="../"><span class="mark">XR</span><span>XREAL CV · AI Agent Community<br><small>XREAL-CV-AI-AGENT-COMMUNITY · WEEK 01</small></span></a>
@@ -315,7 +339,7 @@ body.fit{overflow:hidden;height:100vh;height:100dvh;padding-bottom:0}
     <p class="note rv">「억제와 레드티밍의 역사」 보고서 확장판 · 그림은 모두 개념도 · xreal-cv-ai-agent-community 1주차</p>
     <div class="btns rv">
       <a class="btn primary" href="#summary">강의 시작 →</a>
-      <a class="btn" href="animations.html">32개 장면 애니메이션</a>
+      <a class="btn" href="animations.html">애니메이션만 모아 보기</a>
       <a class="btn" href="slides-v0.4.pdf">장표 PDF</a>
     </div>
   </section>
@@ -396,7 +420,6 @@ body.fit{overflow:hidden;height:100vh;height:100dvh;padding-bottom:0}
         </tbody>
       </table>
     </div>
-    <a class="anim-link rv" href="animations.html#lm">▶ 애니메이션으로 보기 · n-gram, NPLM, RNN, LSTM, word2vec</a><br>
     <button class="btn done-btn" type="button" data-done="w1:lm"></button>
   </section>
 
@@ -450,7 +473,6 @@ body.fit{overflow:hidden;height:100vh;height:100dvh;padding-bottom:0}
       </table>
     </div>
     <div class="redline rv"><b>전환점</b><p>여기서부터 프롬프트 엔지니어링과 레드티밍이 본격적으로 시작된다.</p></div>
-    <a class="anim-link rv" href="animations.html#att">▶ 애니메이션으로 보기 · seq2seq 병목, 셀프 어텐션, Transformer, 세 갈래</a><br>
     <button class="btn done-btn" type="button" data-done="w1:att"></button>
   </section>
 
@@ -504,7 +526,6 @@ CRITICAL: You MUST be THOROUGH.</pre>
     </div>
     <div class="brk"></div>
     <div class="redline rv"><b>판정</b><p>이 변화는 "끌어내기에서 억제로"보다 <b>조향성·통제 가능성으로의 이동</b>으로 부르는 편이 정확하다. 억제는 HHH 정렬, RLHF처럼 모델 개발 층에서 처음부터 중심이었고, 끌어내기는 추론 학습과 test-time compute로 모델 안에 들어갔다.</p></div>
-    <a class="anim-link rv" href="animations.html#pr">▶ 애니메이션으로 보기 · Zero-shot부터 APE·OPRO까지 19개 장면</a><br>
     <button class="btn done-btn" type="button" data-done="w1:prompt"></button>
   </section>
 
@@ -576,7 +597,6 @@ CRITICAL: You MUST be THOROUGH.</pre>
       </table>
     </div>
     <div class="redline rv"><b>안전이 다른 이유</b><p>VLA의 출력은 물리적 행동이라 사람이 걸러낼 기회가 없다. 텍스트 LLM의 탈옥 기법이 로봇 제어로 그대로 옮겨갈 수 있다.</p></div>
-    <a class="anim-link rv" href="animations.html#vlm">▶ 애니메이션으로 보기 · VLM, ViT, CLIP, 연결 모듈, VLA</a><br>
     <button class="btn done-btn" type="button" data-done="w1:vlm"></button>
   </section>
 
@@ -656,6 +676,7 @@ CRITICAL: You MUST be THOROUGH.</pre>
 </footer>
 
 <script src="../assets/common.js"></script>
+<script src="scenes.js"></script>
 <script src="week1.js"></script>
 </body>
 </html>

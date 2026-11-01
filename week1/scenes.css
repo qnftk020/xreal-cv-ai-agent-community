@@ -1,0 +1,63 @@
+/* 원본 애니메이션의 SVG 스타일 (.stage 안으로 범위 한정) */
+.stage .tx{dominant-baseline:central;fill:var(--ink);font-family:var(--f-body)}
+.stage .tx.sub,.stage .sb{fill:var(--sub)}
+.stage .tx.acc{fill:var(--accent)}
+.stage .tx.wht{fill:#fff}
+.stage .tx.oi{fill:var(--on-ink)}
+.stage .gl{stroke:var(--accent);stroke-width:1.5}
+.stage .slot{fill:none;stroke:var(--rule);stroke-width:1.4;stroke-dasharray:4 3}
+.stage .ctx.d{opacity:.3}
+.stage .mono{font-family:var(--f-mono)}
+.stage .bx rect,.stage .bx circle{fill:var(--stage);stroke:var(--ink);stroke-width:2.2;transition:fill .25s,stroke .25s}
+.stage .bx .lb{fill:var(--ink)}
+.stage .bx.solid rect,.stage .bx.solid circle{fill:var(--ink)}
+.stage .bx.solid .lb,.stage .bx.solid .sb{fill:var(--on-ink)}
+.stage .bx.ghost rect{fill:var(--soft);stroke:var(--rule);stroke-width:1}
+.stage .bx.dash rect{stroke-dasharray:6 4}
+.stage .bx.thin rect{stroke-width:1.6}
+.stage .bx.tagb rect{fill:var(--stage);stroke:var(--accent);stroke-width:1.4}
+.stage .bx.tagb .lb{fill:var(--accent)}
+.stage .bx.on rect,.stage .bx.on circle{stroke:var(--accent);fill:var(--accent-soft)}
+.stage .bx.solid.on rect,.stage .bx.solid.on circle{fill:var(--accent);stroke:var(--accent)}
+.stage .bx.solid.on .lb,.stage .bx.solid.on .sb{fill:#fff}
+.stage .bx.muted,.stage .muted{opacity:.3}
+.stage .wr{fill:none;stroke:var(--ink);stroke-width:1.9;transition:stroke .2s,opacity .25s}
+.stage .wr.ar{marker-end:url(#ah)}
+.stage .wr.on{stroke:var(--accent)}
+.stage .wr.on.ar{marker-end:url(#aha)}
+.stage .wr.dash{stroke-dasharray:5 4}
+.stage .wr.thin{stroke-width:1.5}
+.stage .wr.inv{stroke:transparent}
+.stage .wr.inv.ar{marker-end:none}
+.stage .wr.inv.on{stroke:var(--accent)}
+.stage .wr.mute{opacity:.3}
+.stage .wr.nomk{marker-end:none!important}
+.stage .dt{fill:var(--accent)}
+.stage .br{fill:var(--ink)}
+.stage .br.acc{fill:var(--accent)}
+.stage .track{fill:var(--soft)}
+.stage .cell{fill:var(--stage);stroke:var(--ink);stroke-width:1.4;transition:fill .25s,opacity .25s,stroke .25s}
+.stage .cell.f{fill:var(--ink)}
+.stage .cell.s{fill:var(--soft)}
+.stage .cell.a{fill:var(--accent);stroke:var(--accent)}
+.stage .cell.d{opacity:.22}
+.stage .cell.e{stroke:var(--rule)}
+.stage .ctx{dominant-baseline:central;font-family:var(--f-body);font-size:10px;font-weight:700;fill:var(--ink);transition:fill .25s}
+.stage .ctx.w{fill:#fff}
+.stage .ctx.o{fill:var(--on-ink)}
+.stage .frame{fill:none;stroke:var(--sub);stroke-width:1.6;stroke-dasharray:4 4;transition:stroke .25s}
+.stage .frame.on{stroke:var(--accent);stroke-width:2}
+.stage .win{fill:none;stroke:var(--accent);stroke-width:2;stroke-dasharray:6 4}
+.stage .rule{stroke:var(--rule);stroke-width:1.2}
+.stage .xm{stroke:var(--accent);stroke-width:3;stroke-linecap:round}
+.stage .att{stroke:var(--accent);fill:none;stroke-linecap:round}
+.stage .curve{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round}
+.stage .base{stroke:var(--rule);stroke-width:1}
+.stage .icon{fill:var(--soft);stroke:var(--ink);stroke-width:1.4}
+.stage .icon-l{fill:none;stroke:var(--ink);stroke-width:1.4}
+.stage .icon-d{fill:var(--ink)}
+.mk{fill:var(--ink)}
+.mka{fill:var(--accent)}
+.stage .fade{transition:opacity .3s}
+.stage .hid{opacity:0}
+@media (prefers-reduced-motion:reduce){.stage .fade,.stage .bx rect,.stage .bx circle,.stage .wr,.stage .cell,.stage .ctx,.stage .frame{transition:none}}

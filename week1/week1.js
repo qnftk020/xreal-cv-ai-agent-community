@@ -4,6 +4,118 @@ const $ = id => document.getElementById(id);
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+/* ---------- 애니메이션 장면을 슬라이드 사이에 끼워 넣는다 (장표 쪽수 순서) ---------- */
+const ANIM = (() => {
+  /* 장 id → { 몇 번째 슬라이드 뒤: [장표 쪽수…] } */
+  const PLACE = {
+    lm: { 1: [5, 6, 7, 8, 10] },
+    att: { 0: [12, 13], 1: [14, 15] },
+    prompt: { 0: [19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29], 1: [31, 32, 33, 34, 35, 36, 37] },
+    vlm: { 0: [41, 42, 43, 44], 1: [46] }
+  };
+  const HOLD = 0.8, EPS = 1e-3;
+  const items = [];
+  const byPage = p => SCENES.find(s => s.page === p);
+  function card(sc, sec) {
+    const tag = sec.querySelector('.sec-head .tag');
+    const el = h('div', 'scn rv');
+    el.dataset.slide = 'anim-' + sc.page;
+    el.dataset.label = sc.title;
+    el.innerHTML = `<div class="main"><div class="stage" tabindex="0" role="button" aria-label="${sc.title} 애니메이션, 누르면 멈추거나 이어서 재생"><div class="prog"></div></div>
+      <div class="ctl"><button class="btn primary" type="button" data-a="play">일시정지</button><button class="btn" type="button" data-a="prev">이전 동작</button><button class="btn" type="button" data-a="next">다음 동작</button><button class="btn" type="button" data-a="re">처음부터</button><span class="stp"></span></div></div>
+      <div class="side"><div class="eyebrow"><span class="${tag ? tag.className : 'tag'}">${tag ? tag.textContent : ''}</span><span>애니메이션 · 장표 ${sc.page}쪽 · ${sc.kind}</span></div>
+      <h2>${sc.title}</h2><p class="cap">${sc.cap}</p>
+      <p class="src">빨간 점과 빨간 테두리가 지금 계산이 일어나는 곳이다. 화면을 누르면 멈추고 다시 누르면 이어진다.</p></div>`;
+    const stage = el.querySelector('.stage');
+    const svg = mk('svg', { viewBox: '0 0 640 360', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': sc.title + ' 애니메이션' });
+    stage.insertBefore(svg, stage.firstChild);
+    const S = new Scene(svg, sc.dur);
+    sc.build(S);
+    const steps = S.steps(); if (!steps.length) steps.push(sc.dur - 0.05);
+    const it = { sc, S, steps, el, bar: stage.querySelector('.prog'), t: 0, playing: true, manual: false, target: 0, hold: 0, fitted: false,
+      play: el.querySelector('[data-a=play]'), stp: el.querySelector('.stp') };
+    if (XR.reduce) { it.playing = false; it.t = steps[steps.length - 1]; }
+    const toggle = () => { if (!it.playing) { it.playing = true; return; } if (waiting(it)) { it.manual = false; return; } it.playing = false; };
+    stage.addEventListener('click', toggle);
+    stage.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); toggle(); } });
+    it.play.addEventListener('click', toggle);
+    el.querySelector('[data-a=next]').addEventListener('click', () => { if (!nextStep(it)) { restart(it); it.manual = true; nextStep(it); } });
+    el.querySelector('[data-a=prev]').addEventListener('click', () => prevStep(it));
+    el.querySelector('[data-a=re]').addEventListener('click', () => { restart(it); it.manual = false; it.playing = true; });
+    items.push(it);
+    return el;
+  }
+  /* 원본 플레이어의 '동작마다 잠깐 멈춤' 방식 */
+  const lastStep = it => it.steps[it.steps.length - 1];
+  const stepIndex = it => { let i = 0; for (const p of it.steps) if (it.t >= p - EPS) i++; return i; };
+  const waiting = it => it.manual && it.t >= it.target - EPS;
+  function advance(it, dt) {
+    if (!it.playing) return;
+    if (it.manual) { if (it.t < it.target) it.t = Math.min(it.target, it.t + dt); return; }
+    if (it.hold > 0) { it.hold -= dt; return; }
+    let nt = it.t + dt;
+    const end = lastStep(it);
+    const p = it.steps.find(q => q > it.t + EPS && q <= nt && q < end - EPS);
+    if (p !== undefined) { it.t = p; it.hold = HOLD; return; }
+    if (nt >= it.sc.dur) nt -= it.sc.dur;
+    it.t = nt;
+  }
+  function restart(it) { it.t = 0; it.hold = 0; it.target = 0; }
+  function nextStep(it) {
+    if (it.manual && it.playing && it.t < it.target - EPS) { it.t = it.target; return true; }
+    const i = stepIndex(it);
+    if (i >= it.steps.length) return false;
+    it.manual = true; it.playing = true; it.hold = 0; it.target = it.steps[i];
+    return true;
+  }
+  function prevStep(it) {
+    if (it.t <= EPS) return false;
+    let tgt = 0; for (const p of it.steps) if (p < it.t - EPS) tgt = p;
+    it.manual = true; it.playing = true; it.hold = 0; it.t = tgt; it.target = tgt;
+    return true;
+  }
+  function render(it) {
+    it.S.update(it.t);
+    it.bar.style.transform = 'scaleX(' + (it.t / it.sc.dur).toFixed(4) + ')';
+    const lab = (!it.playing || waiting(it)) ? '재생' : '일시정지';
+    if (it.play.textContent !== lab) it.play.textContent = lab;
+    const st = '동작 ' + Math.min(it.steps.length, stepIndex(it)) + ' / ' + it.steps.length;
+    if (it.stp.textContent !== st) it.stp.textContent = st;
+  }
+
+  /* 끼워 넣기 */
+  document.querySelectorAll('main > section').forEach(sec => {
+    const plan = PLACE[sec.id]; if (!plan) return;
+    const brks = [...sec.querySelectorAll(':scope > .brk')];
+    Object.keys(plan).forEach(k => {
+      const ref = brks[+k] || null;               /* k번째 슬라이드가 끝나는 자리 */
+      plan[k].forEach(pg => {
+        const sc = byPage(pg); if (!sc) return;
+        sec.insertBefore(h('div', 'brk'), ref);
+        sec.insertBefore(card(sc, sec), ref);
+      });
+    });
+  });
+
+  /* 지금 보이는 슬라이드의 장면만 움직인다 */
+  let last = performance.now();
+  function tick(now) {
+    const dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
+    for (const it of items) {
+      const sl = it.el.closest('.slide');
+      if (!sl || !sl.classList.contains('cur')) continue;
+      if (!it.fitted && it.el.offsetWidth) { it.S.fit(); it.fitted = true; }
+      advance(it, dt); render(it);
+    }
+    requestAnimationFrame(tick);
+  }
+  items.forEach(render);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => items.forEach(i => { i.fitted = false; }));
+  requestAnimationFrame(tick);
+  /* 슬라이드에 들어올 때마다 처음부터 */
+  return { enter(slide) { items.forEach(it => { if (slide.contains(it.el)) { restart(it); it.manual = false; it.playing = !XR.reduce; } }); } };
+})();
+
 /* ---------- 슬라이드: 장을 화면 단위로 나누고, 넓은 화면에서는 스크롤 없이 맞춘다 ---------- */
 const PAGER = (() => {
   const main = document.querySelector('main');
@@ -21,7 +133,9 @@ const PAGER = (() => {
       sl.id = k ? sec.id + '-' + (k + 1) : sec.id;
       sl.dataset.sec = sec.id; sl.dataset.name = sec.dataset.name; sl.dataset.part = (k + 1) + '/' + groups.length;
       const box = h('div', 'fitbox' + (sec.classList.contains('sec') ? ' sec' : ''));
-      if (k && tag) box.appendChild(h('div', 'cont', `<span class="${tag.className}">${tag.textContent}</span><span>${k + 1} / ${groups.length}</span>`));
+      const sid = g.find(n => n.nodeType === 1 && n.dataset && n.dataset.slide);
+      if (sid) { sl.id = sid.dataset.slide; sl.dataset.label = sid.dataset.label; sl.classList.add('anim'); }
+      if (k && tag && !sid) box.appendChild(h('div', 'cont', `<span class="${tag.className}">${tag.textContent}</span><span>${k + 1} / ${groups.length}</span>`));
       g.forEach(n => box.appendChild(n));
       sl.appendChild(box); main.insertBefore(sl, sec); slides.push(sl);
     });
@@ -32,10 +146,11 @@ const PAGER = (() => {
   let cur = -1;
   document.body.classList.add('paged');
   $('pgTot').textContent = pad(slides.length);
-  const label = i => slides[i].dataset.name + (slides[i].dataset.part !== '1/1' ? ' ' + slides[i].dataset.part.replace('/', ' / ') : '');
+  const label = i => slides[i].dataset.label ? '▶ ' + slides[i].dataset.label : slides[i].dataset.name + (slides[i].dataset.part !== '1/1' ? ' ' + slides[i].dataset.part.replace('/', ' / ') : '');
 
   const dots = slides.map((s, i) => {
     const d = h('button'); d.type = 'button'; d.title = pad(i + 1) + ' ' + label(i); d.setAttribute('aria-label', d.title);
+    if (s.classList.contains('anim')) d.classList.add('an');
     d.addEventListener('click', () => go(i));
     $('pgDots').appendChild(d); return d;
   });
@@ -84,7 +199,7 @@ const PAGER = (() => {
     const back = i < cur;
     cur = i; seen.add(i);
     slides.forEach((s, j) => { s.classList.toggle('cur', j === i); s.classList.toggle('back', j === i && back); });
-    reveal(slides[i]);
+    reveal(slides[i]); ANIM.enter(slides[i]);
     const sec = slides[i].dataset.sec;
     links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + sec));
     const on = links.find(a => a.classList.contains('on'));
@@ -348,7 +463,7 @@ const PAGER = (() => {
   function open(i) {
     const p = P[i];
     cards.forEach((c, j) => c.setAttribute('aria-expanded', j === i ? 'true' : 'false'));
-    det.innerHTML = `<div><span class="kicker">${G[p[0]]} · 장표 ${p[4]}쪽</span><h4>${p[1]}</h4><p>${p[2]}</p></div><div class="num">${String(i + 1).padStart(2, '0')}</div><div class="src">원본 논문: ${p[3]} · <a href="animations.html#pr">애니메이션 보기</a></div>`;
+    det.innerHTML = `<div><span class="kicker">${G[p[0]]} · 장표 ${p[4]}쪽</span><h4>${p[1]}</h4><p>${p[2]}</p></div><div class="num">${String(i + 1).padStart(2, '0')}</div><div class="src">원본 논문: ${p[3]} · <a href="#anim-${p[4]}">▶ 이 방법론의 애니메이션</a></div>`;
   }
   paint();
 })();

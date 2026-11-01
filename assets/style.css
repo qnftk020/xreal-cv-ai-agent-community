@@ -7,7 +7,7 @@
 @font-face{font-family:"Pretendard";font-weight:800;font-display:swap;src:url(fonts/pretendard-800.woff2) format("woff2")}
 :root{color-scheme:light;
   --bg:#ffffff;--ink:#111111;--sub:#4d4d4d;--rule:#c9c9c9;--soft:#f2f2f2;
-  --accent:#e1262c;--accent-soft:#fde8e9;--on-ink:#ffffff;
+  --accent:#e1262c;--accent-soft:#fde8e9;--on-ink:#ffffff;--stage:#ffffff;
   --f:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
   --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
 }
