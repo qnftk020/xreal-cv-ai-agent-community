@@ -1,9 +1,6 @@
 'use strict';
-/* 공통 동작: 스크롤 등장, 읽기 진행 막대, 숫자 카운트업, 학습 완료 체크(브라우저에만 저장) */
+/* 공통 동작: 스크롤 등장, 읽기 진행 막대, 숫자 카운트업 */
 const XR = (() => {
-  const KEY = 'xreal-cv-ai-agent-community:progress';
-  const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
-  const save = s => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) { /* 저장소를 못 쓰면 무시 */ } };
   const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   function reveal() {
@@ -43,19 +40,6 @@ const XR = (() => {
     els.forEach(e => io.observe(e));
   }
 
-  /* data-done="week1:lm" 버튼: 누르면 완료 표시를 토글한다 */
-  function doneButtons(onChange) {
-    const st = load();
-    document.querySelectorAll('[data-done]').forEach(b => {
-      const id = b.dataset.done;
-      const paint = () => { b.setAttribute('aria-pressed', st[id] ? 'true' : 'false'); b.lastChild.textContent = st[id] ? ' 학습 완료' : '이 장을 다 봤어요'; };
-      if (!b.lastChild || b.lastChild.nodeType !== 3) b.appendChild(document.createTextNode(''));
-      paint();
-      b.addEventListener('click', () => { st[id] = !st[id]; save(st); paint(); onChange && onChange(st); });
-    });
-    onChange && onChange(st);
-  }
-
   document.addEventListener('DOMContentLoaded', () => { reveal(); readbar(); countUp(); });
-  return { load, save, doneButtons, reduce };
+  return { reduce };
 })();

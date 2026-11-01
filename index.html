@@ -40,10 +40,6 @@ a.card:hover{transform:translate(-5px,-5px);box-shadow:8px 8px 0 var(--accent)}
 .wk p{margin:0 0 16px;font-size:15px}
 .wk .tops{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
 .wk .tops i{font-style:normal;font-size:12.5px;font-weight:700;border:1.5px solid currentColor;padding:2px 9px}
-.meter{margin-top:18px}
-.meter .lbl{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
-.meter .bar{height:10px;border:2px solid var(--ink);margin-top:6px}
-.meter .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .6s}
 .go{margin-top:16px;font-weight:800}
 a.card:hover .go{color:var(--accent)}
 @media (max-width:860px){.weeks{grid-template-columns:1fr}.track::before{display:none}}
@@ -88,7 +84,7 @@ a.card:hover .go{color:var(--accent)}
     <div class="sec-head rv">
       <div class="eyebrow"><span class="tag">커리큘럼</span><span>3주 진행 · 주차마다 순서대로 열린다</span></div>
       <h2>한 주에 한 장씩 열린다</h2>
-      <p>1주차 강의가 열려 있다. 2·3주차는 강의 당일 공개된다. 각 장 끝의 ‘다 봤어요’를 누르면 진도가 이 브라우저에 저장된다.</p>
+      <p>1주차 강의가 열려 있다. 2·3주차는 강의 당일 공개된다.</p>
     </div>
     <div class="track">
       <div class="weeks">
@@ -99,7 +95,6 @@ a.card:hover .go{color:var(--accent)}
             <h3>LLM의 역사와 작동 원리, 그리고 레드티밍</h3>
             <p>임베딩·어텐션에서 프롬프트 방법론 18가지, VLM·VLA, 의료 LLM 레드티밍까지.</p>
             <div class="tops"><i>언어 모델</i><i>어텐션</i><i>프롬프트</i><i>VLM·VLA</i><i>레드티밍</i></div>
-            <div class="meter"><div class="lbl"><span>내 진도</span><span id="w1pct">0 / 5</span></div><div class="bar"><i id="w1bar"></i></div></div>
             <span class="go">강의 열기 →</span>
           </a>
         </div>
@@ -146,11 +141,6 @@ a.card:hover .go{color:var(--accent)}
     (navigator.clipboard ? navigator.clipboard.writeText(dom.textContent) : Promise.reject()).then(() => { b.textContent = '복사됨'; }, () => { b.textContent = '복사 실패'; });
     setTimeout(() => { b.textContent = '복사'; }, 1400);
   });
-  const st = XR.load();
-  const ids = ['lm', 'att', 'prompt', 'vlm', 'redteam'];
-  const n = ids.filter(i => st['w1:' + i]).length;
-  document.getElementById('w1pct').textContent = n + ' / ' + ids.length;
-  requestAnimationFrame(() => { document.getElementById('w1bar').style.width = (n / ids.length * 100) + '%'; });
 })();
 </script>
 </body>

@@ -110,10 +110,6 @@ ul.sq li::before{content:"";position:absolute;left:2px;top:.62em;width:9px;heigh
 .rv.in{opacity:1;transform:none}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.rv{opacity:1;transform:none;transition:none}*{animation:none!important}}
 
-/* 학습 완료 체크 */
-.done-btn{margin-top:24px}
-.done-btn[aria-pressed="true"]{background:var(--ink);color:#fff}
-.done-btn[aria-pressed="true"]::before{content:"✓"}
 
 /* 푸터 */
 .foot{margin-top:88px;border-top:4px solid var(--ink);padding:24px 0 48px;font-size:13.5px;color:var(--sub)}

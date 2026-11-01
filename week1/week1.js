@@ -242,10 +242,6 @@ const PAGER = (() => {
     if (e.deltaY > 0) $('pgNext').click(); else go(cur - 1);
   }, { passive: true });
 
-  XR.doneButtons(st => {
-    links.forEach(a => a.dataset.k && a.classList.toggle('ok', !!st['w1:' + a.dataset.k]));
-    dots.forEach((d, j) => d.classList.toggle('ok', !!st['w1:' + slides[j].dataset.sec]));
-  });
   const start = idx(location.hash);
   layout();
   go(start >= 0 ? start : 0, { noHash: start < 0 });
