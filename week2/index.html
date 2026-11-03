@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="XREAL CV · AI Agent Community">
-<meta property="og:title" content="2주차 · 공개 예정 — XREAL CV · AI Agent Community">
-<meta property="og:description" content="2주차 강의는 강의 당일 공개됩니다.">
+<meta property="og:title" content="2주차 · 결정 모델과 Jev 엔지니어링, 그리고 에이전트 하네스">
+<meta property="og:description" content="XREAL CV · AI Agent Community 2주차. 생성하지 않고 판단하는 모델이 에이전트 설계를 바꾸는 방식. 인터랙티브 슬라이드와 10개 애니메이션.">
 <meta property="og:url" content="https://qnftk020.github.io/xreal-cv-ai-agent-community/week2/">
 <meta property="og:image" content="https://qnftk020.github.io/xreal-cv-ai-agent-community/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -14,30 +14,902 @@
 <meta property="og:image:alt" content="손을 흔드는 AI 로봇과 'LLM에서 AI 에이전트까지, 3주 강의'">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<title>2주차 · 공개 예정 — XREAL CV · AI Agent Community</title>
+<title>2주차 · 결정 모델과 Jev 엔지니어링, 그리고 에이전트 하네스 — XREAL CV · AI Agent Community</title>
+<meta name="description" content="xreal-cv-ai-agent-community 2주차 강의. 결정 모델, Jev 엔지니어링, 에이전트 하네스.">
 <link rel="stylesheet" href="../assets/style.css">
-<style>.lockbox{border:3px dashed var(--sub);color:var(--sub);padding:28px;max-width:720px;margin-top:28px}.lockbox b{display:block;font-size:48px;color:var(--ink);line-height:1;letter-spacing:-.04em}</style>
+<link rel="stylesheet" href="../assets/deck.css">
+<link rel="stylesheet" href="../assets/scenes.css">
+<style>
+/* 2주차 전용 */
+.box3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px;margin-top:22px}
+.box3 .panel h3{font-size:17px}
+.panel ul.sq li{margin:5px 0;font-size:15px}
+.mini{border:2px solid var(--ink);padding:14px 18px;margin-top:18px;font-size:14.5px;background:var(--soft)}
+.flow5{display:flex;align-items:stretch;flex-wrap:wrap;row-gap:10px;margin-top:24px}
+.flow5 .st{flex:1 1 120px;border:2.5px solid var(--ink);padding:12px;text-align:center;background:var(--bg)}
+.flow5 .st b{display:block;font-size:15.5px;font-weight:800}
+.flow5 .st span{display:block;font-size:12.5px;color:var(--sub);margin-top:2px}
+.flow5 .st.solid{background:var(--ink);color:#fff}.flow5 .st.solid span{color:#ccc}
+.flow5 .st.red{border-color:var(--accent);background:var(--accent-soft)}
+.flow5 .ar{flex:0 0 24px;display:grid;place-items:center;font-weight:800;color:var(--sub)}
+.flow5 + .loopback{font-size:12.5px;color:var(--sub);text-align:center;border:1.5px dashed var(--sub);border-top:0;margin:0 60px;padding:4px 0 2px}
+@media (max-width:760px){.flow5{flex-direction:column}.flow5 .ar{transform:rotate(90deg);height:20px}.flow5 + .loopback{display:none}}
+.code{font-family:var(--mono);font-size:13.5px;line-height:1.6;background:var(--soft);border-left:4px solid var(--ink);padding:14px 18px;margin:0;white-space:pre;overflow-x:auto}
+.code-cap{font-size:12.5px;color:var(--sub);margin-top:6px}
+.split{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px;margin-top:22px;align-items:start}
+@media (max-width:860px){.split{grid-template-columns:1fr}}
+.ex{border:3px solid var(--ink)}
+.ex h4{margin:0;background:var(--ink);color:#fff;font-size:14px;padding:8px 14px;font-weight:800}
+.ex .row{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:10px 14px;border-top:1.5px solid var(--rule);font-size:14.5px;align-items:center}
+.ex .row:first-of-type{border-top:0}
+.ex .row code{font-family:var(--mono);font-weight:700}
+.ex .row b{font-variant-numeric:tabular-nums}
+.ex .row i{font-style:normal;font-weight:800;font-size:12.5px;border:2px solid var(--ink);padding:1px 8px}
+.ex .row i.deny{background:var(--accent);border-color:var(--accent);color:#fff}
+.ex .row i.ask{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px;margin-top:22px;counter-reset:st}
+.steps div{border:2.5px solid var(--ink);padding:14px 14px 16px;position:relative}
+.steps div::before{counter-increment:st;content:counter(st,decimal-leading-zero);display:block;font-size:26px;font-weight:800;color:var(--accent);line-height:1;margin-bottom:8px}
+.steps b{display:block;font-size:16px;font-weight:800;margin-bottom:4px}
+.steps span{font-size:13.5px;color:var(--sub)}
+.srcs{font-size:12.5px;color:var(--sub);margin-top:14px}
+.srcs a{color:var(--ink)}
+.who{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;border:1.5px solid currentColor;padding:0 6px;margin-left:6px;vertical-align:2px}
+.who.co{color:var(--sub)}.who.ind{color:var(--accent)}
+.stat .big.sm{font-size:clamp(34px,4.4vw,52px)}
+.tbl.sm{font-size:13.5px}.tbl.sm td,.tbl.sm th{padding:9px 12px}
+/* 데모 */
+.lp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.lp .ctl{display:grid;gap:14px}
+.lp label{display:block;font-weight:700;font-size:14px}
+.lp label b{float:right;font-variant-numeric:tabular-nums}
+.lp input[type=range]{width:100%;accent-color:var(--accent)}
+.lp .res{display:grid;gap:14px}
+.mbar{display:grid;grid-template-columns:120px 1fr 110px;gap:10px;align-items:center;font-size:14px;font-weight:700}
+.mbar .t{height:24px;border-left:2px solid var(--ink);position:relative}
+.mbar .t i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--ink);transition:width .4s}
+.mbar.r .t i{background:var(--accent)}
+.mbar span{font-variant-numeric:tabular-nums;text-align:right}
+.lp .big{font-size:40px;font-weight:800;letter-spacing:-.03em;color:var(--accent);line-height:1}
+@media (max-width:760px){.lp{grid-template-columns:1fr}.mbar{grid-template-columns:90px 1fr 90px}}
+.qcols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.qcol{border:2.5px solid var(--ink)}
+.qcol h5{margin:0;background:var(--ink);color:#fff;padding:8px 12px;font-size:15px;font-weight:800}
+.qcol h5 small{font-weight:600;color:#ccc;margin-left:6px;font-size:12px}
+.qcol .b{padding:12px}
+.qrow{display:grid;grid-template-columns:70px 1fr 40px;gap:8px;align-items:center;font-size:13px;font-weight:700;margin:5px 0}
+.qrow .t{height:16px;background:var(--soft)}.qrow .t i{display:block;height:100%;width:0;background:var(--ink);transition:width .4s}
+.qrow.top .t i{background:var(--accent)}
+.qrow span{text-align:right;font-variant-numeric:tabular-nums}
+.qcol .out{margin-top:10px;font-weight:800;color:var(--accent);font-size:14.5px}
+.gauge{height:22px;background:var(--soft);position:relative;margin-top:10px}.gauge i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--accent);transition:width .4s}
+.qbig{font-size:38px;font-weight:800;color:var(--accent);margin-top:8px;font-variant-numeric:tabular-nums}
+@media (max-width:760px){.qcols{grid-template-columns:1fr}}
+.gd{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
+.gd .row{display:grid;grid-template-columns:1fr 54px 64px 70px;gap:8px;align-items:center;border-top:1.5px solid var(--rule);padding:7px 0;font-size:13.5px}
+.gd .row:first-child{border-top:0}
+.gd .row code{font-family:var(--mono);font-weight:700;font-size:12.5px}
+.gd .row .p{font-variant-numeric:tabular-nums;font-weight:800;text-align:right}
+.gd .row .lab{font-size:12px;color:var(--sub);text-align:center}
+.gd .row .o{text-align:center;font-weight:800;font-size:12.5px;border:2px solid var(--ink);padding:1px 0}
+.gd .row .o.DENY{background:var(--accent);border-color:var(--accent);color:#fff}
+.gd .row .o.ASK{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.gd .row.miss{background:var(--accent-soft)}
+.gd .sum{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.gd .sum div{border:2px solid var(--ink);padding:8px 10px;font-size:12.5px;font-weight:700}
+.gd .sum b{display:block;font-size:26px;font-weight:800}
+.gd .sum .bad b{color:var(--accent)}
+@media (max-width:860px){.gd{grid-template-columns:1fr}}
+.tl11{grid-template-columns:repeat(11,minmax(0,1fr))!important}
+.tl11 button{font-size:13px!important}
+.tl11 button.rep{background:var(--bg)!important;color:var(--ink)!important;border:2px dashed var(--ink)!important}
+.tl11 button.rep[aria-selected="true"]{border-color:var(--accent)!important;color:var(--accent)!important}
+@media (max-width:760px){.tl11{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+.cal{display:grid;gap:18px;margin-top:6px}
+.cal .g h5{margin:0 0 8px;font-size:15px;font-weight:800}
+.cal .mbar{grid-template-columns:110px 1fr 70px}
+.refs{columns:2;column-gap:32px;font-size:13px;line-height:1.55}
+.refs h4{font-size:13.5px;font-weight:800;margin:0 0 6px;break-after:avoid}
+.refs ul{list-style:none;margin:0 0 14px;padding:0}
+.refs li{margin:0 0 5px;break-inside:avoid}
+.refs a{color:var(--ink)}
+.refs .k{font-size:11px;font-weight:800;color:var(--sub)}
+@media (max-width:760px){.refs{columns:1}}
+.preview{border:3px dashed var(--ink);padding:16px 20px;margin-top:20px;display:grid;grid-template-columns:120px 1fr;gap:14px}
+.preview b{font-size:18px}
+.preview p{margin:0}
+</style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mka"/></marker>
+  </defs>
+</svg>
 <header class="topbar">
   <div class="wrap">
     <a class="brand" href="../" aria-label="XREAL CV · AI Agent Community 홈"><svg class="mark" viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" fill="#111"/><path d="M9 9 L27 27 M27 9 L9 27" stroke="#fff" stroke-width="4.2" stroke-linecap="square"/><rect x="25" y="25" width="11" height="11" fill="#e1262c"/></svg><span class="word">XREAL</span><span class="div" aria-hidden="true"></span><span class="sub"><b>CV · AI AGENT</b><b>COMMUNITY</b></span></a><span class="wkchip">WEEK 02</span>
     <nav class="topnav" aria-label="주차">
       <a href="../">코스 홈</a>
       <a href="../week1/">1주차</a>
-      <a href="../week2/" class="locked" aria-current="page">2주차</a>
+      <a href="./" aria-current="page">2주차</a>
       <a href="../week3/" class="locked">3주차</a>
     </nav>
   </div>
+  <nav class="secnav" aria-label="장 이동">
+    <div class="wrap" id="secnav">
+      <a href="#cover"><b>··</b>표지</a>
+      <a href="#summary"><b>00</b>요약</a>
+      <a href="#bg"><b>01</b>배경</a>
+      <a href="#jev"><b>02</b>Jev</a>
+      <a href="#eng"><b>03</b>Jev 엔지니어링</a>
+      <a href="#family"><b>04</b>결정 모델 계열</a>
+      <a href="#limits"><b>05</b>한계와 검증</a>
+      <a href="#next"><b>06</b>다음 흐름</a>
+      <a href="#conclusion"><b>07</b>결론</a>
+      <a href="#refs"><b>08</b>참고문헌</a>
+    </div>
+  </nav>
+  <div class="readbar"></div>
 </header>
+
 <main class="wrap">
-  <section class="hero">
-    <span class="tag line">WEEK 02 · 공개 예정</span>
-    <h1>2주차 강의는<br>아직 열리지 않았다</h1>
-    <div class="lockbox"><b>WEEK 02</b><p>강의 당일 이 페이지에 자료와 애니메이션이 올라온다. 그 전까지 1주차를 복습해 두자.</p></div>
-    <div class="btns"><a class="btn primary" href="../week1/">1주차 강의로 →</a><a class="btn" href="../">코스 홈</a></div>
+  <!-- 장표 1 · 표지 -->
+  <section class="hero" id="cover" data-name="표지">
+    <div class="rv"><span class="tag line">WEEK 02 · 결정 모델 · Jev · 에이전트 하네스 · 기준일 2026. 11. 02</span></div>
+    <h1 class="rv">결정 모델과 Jev 엔지니어링,<br>그리고 에이전트 하네스</h1>
+    <div class="slab rv">
+      <b>생성하지 않고 판단하는 모델이 에이전트 설계를 바꾸는 방식</b>
+      <p>에이전트의 판단을 생성 모델에서 떼어 내는 설계가<br>두 달이 채 안 되어 하나의 범주가 된 과정</p>
+    </div>
+    <p class="note rv">그림은 모두 개념도 · 회사 발표 수치와 독립 측정 수치를 구분해 표시 · xreal-cv-ai-agent-community 2주차</p>
+    <div class="btns rv">
+      <a class="btn primary" href="#summary">강의 시작 →</a>
+      <a class="btn" href="../week1/">1주차 복습</a>
+    </div>
+  </section>
+
+  <!-- 장표 2 · 요약 -->
+  <section class="sec" id="summary" data-name="요약">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">요약</span><span>이 강의의 줄기</span></div>
+      <h2>에이전트의 병목이 생성에서 판단으로 옮겨가자 판단만 하는 모델이 나왔다</h2>
+    </div>
+    <div class="panel thick rv" style="margin-top:22px">
+      <p style="margin:0;font-size:16.5px">에이전트는 매 단계 무엇을 할지 판단하고, 도구를 실행하고, 결과를 평가한다. 지금까지는 이 판단마다 글을 생성하는 LLM을 불렀다. Jev는 상태와 선택지를 받아 확률이 붙은 답만 돌려주는 모델이고, 그 뒤 OpenAI, Microsoft, Cloudflare, Perplexity, Liquid AI가 같은 형식의 모델을 내놓으면서 결정 모델이라는 범주가 생겼다. 설계 원칙은 한 줄로 요약된다. <b>LLM이 쓰고, 결정 모델이 판단하고, 코드가 행동한다.</b></p>
+    </div>
+    <div class="grid g3">
+      <div class="stat rv"><div class="big">$<span data-count="0.042" data-dec="3">0.042</span></div><h4>Jev의 입력 100만 토큰당 가격</h4><p>출력 토큰은 현재 무료 <span class="who co">TypeSafe 문서</span></p></div>
+      <div class="stat rv"><div class="big"><span data-count="35.3" data-dec="1" data-suf="%">35.3%</span></div><h4>게이트웨이 연결 14일 만의 채택</h4><p>Vercel AI 게이트웨이 유료 팀 중 Jev 사용 비율 <span class="who co">Vercel · 10. 15</span></p></div>
+      <div class="stat rv"><div class="big sm"><span data-count="99.4" data-dec="1">99.4</span> / <span data-count="90.2" data-dec="1" style="color:var(--accent)">90.2</span></div><h4>말한 확신도와 실제 정확도 (%)</h4><p>최상위 확신 구간 <span class="who ind">Anthus 독립 시험 · 09. 19</span></p></div>
+    </div>
+    <div class="redline rv"><b>1주차와 연결</b><p>1주차는 억제가 모델의 거부를 넘어 권한·격리·정보 흐름 같은 시스템 설계로 내려가야 한다는 결론으로 끝났다. 결정 모델은 그 시스템 안에서 판단을 맡는 새 부품이다.</p></div>
+  </section>
+
+  <!-- 01 배경 -->
+  <section class="sec" id="bg" data-name="배경">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">01 배경</span><span>그림 1 · 에이전트 루프의 비용</span></div>
+      <h2>에이전트는 판단할 때마다 큰 모델을 불러 느리고 비싸다</h2>
+    </div>
+    <div class="flow5 rv">
+      <div class="st"><b>상태 관찰</b><span>대화·로그·화면</span></div><div class="ar">→</div>
+      <div class="st red"><b>LLM 판단</b><span>다음 행동 선택</span></div><div class="ar">→</div>
+      <div class="st solid"><b>도구 실행</b><span>명령·검색·API</span></div><div class="ar">→</div>
+      <div class="st red"><b>LLM 평가</b><span>결과가 맞는지</span></div><div class="ar">→</div>
+      <div class="st"><b>다음 상태</b><span>루프 반복</span></div>
+    </div>
+    <div class="loopback rv">↺ 다시 처음으로</div>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="panel rv"><h3>루프 안의 판단은 대부분 닫힌 선택이다</h3><ul class="sq"><li>이 요청을 어느 모델로 보낼까 (라우팅)</li><li>이 명령은 위험한가 (가드)</li><li>이 로그는 어떤 종류인가 (분류)</li><li>작업이 끝났는가 (완료 판정)</li></ul></div>
+      <div class="panel rv"><h3>그런데도 매번 생성 모델을 부른다</h3><ul class="sq"><li>판단 한 번이 모델 호출 한 번이다</li><li>LangChain은 이 구조가 루프를 느리고 비싸게 만든다고 지적했다</li><li>판단의 형식은 선택인데 수단은 글쓰기다</li></ul></div>
+    </div>
+    <div class="redline rv"><b>문제</b><p>선택지 중 하나를 고르는 판단에도 글을 생성하는 모델을 쓰면, 에이전트 루프의 시간과 비용이 판단 횟수만큼 쌓인다.</p></div>
+
+    <div class="brk"></div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">실습</span><strong>판단 단계를 결정 모델로 바꾸면 무엇이 줄어드는가</strong><span class="hint">슬라이더로 조건을 바꿔 보기</span></div>
+      <div class="demo-b">
+        <div class="lp">
+          <div class="ctl">
+            <label>루프 단계 수 <b id="lpN">100</b><input type="range" id="lpRange" min="10" max="500" step="10" value="100"></label>
+            <label>위로 넘기는 비율 (확신도가 낮은 판단) <b id="lpE">10%</b><input type="range" id="lpEsc" min="0" max="50" step="1" value="10"></label>
+            <label>LLM 판단 1회 지연 (가정) <b id="lpL">3.0초</b><input type="range" id="lpLat" min="1" max="10" step="0.5" value="3"></label>
+            <label>LLM 판단 1회 비용 (가정) <b id="lpC">$0.010</b><input type="range" id="lpCost" min="0.002" max="0.05" step="0.002" value="0.01"></label>
+          </div>
+          <div class="res">
+            <div><div class="kicker">판단 시간 합계</div>
+              <div class="mbar"><span style="text-align:left">모두 LLM</span><div class="t"><i id="lpT1"></i></div><span id="lpT1v"></span></div>
+              <div class="mbar r"><span style="text-align:left">결정 모델 + 예외</span><div class="t"><i id="lpT2"></i></div><span id="lpT2v"></span></div></div>
+            <div><div class="kicker">판단 비용 합계</div>
+              <div class="mbar"><span style="text-align:left">모두 LLM</span><div class="t"><i id="lpC1"></i></div><span id="lpC1v"></span></div>
+              <div class="mbar r"><span style="text-align:left">결정 모델 + 예외</span><div class="t"><i id="lpC2"></i></div><span id="lpC2v"></span></div></div>
+            <div><div class="kicker">LLM 호출 수</div><div class="big" id="lpCalls"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="demo-f">결정 모델 1회는 글쓴이 측정값(약 500 입력 토큰, 약 $0.00002, 280~610ms → 0.45초)을 썼다. LLM 지연·비용과 이관 비율은 가정값이니 직접 바꿔 본다. 이관 비율 10%는 '약 90% 단계에는 큰 모델이 필요 없었다'는 글쓴이의 추정을 따랐다.</div>
+    </div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">01 배경</span><span>System 1과 System 2</span></div>
+      <h2>TypeSafe는 빠른 판단을 System 1로, 숙고와 생성을 System 2로 나눴다</h2>
+    </div>
+    <div class="grid g2" style="margin-top:22px">
+      <div class="panel thick rv"><h3>System 1 · 빠르고 직관적인 판단</h3><ul class="sq"><li>한눈에 스팸을 알아보는 종류의 판단</li><li>정해진 선택지 중 하나를 고르고 확률을 붙인다</li><li>TypeSafe가 Jev를 'System One 모델'로 부른 이유</li></ul></div>
+      <div class="panel rv"><h3>System 2 · 느리고 숙고하는 처리</h3><ul class="sq"><li>긴 추론, 계획, 코드와 글의 생성</li><li>선택지가 정해지지 않은 열린 문제</li><li>예외가 생겼을 때만 부르는 상위 단계</li></ul></div>
+    </div>
+    <div class="mini rv">이름은 카너먼의 『Thinking, Fast and Slow』(2011)에서 빌렸다. 범주가 퍼지면서 업계 용어는 'System One 모델'보다 <b>결정 모델(decision model)</b>로 굳었다 (Waehner, 2026. 10. 20).</div>
+    <div class="redline rv"><b>주의</b><p>System 1·2는 카너먼의 비유를 빌린 이름이다. 모델이 사람의 인지 구조를 따른다는 뜻은 아니다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">01 배경</span><span>이 강의에서 쓰는 용어</span></div>
+      <h2>결정 모델을 설명하는 여덟 가지 용어</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl sm">
+      <thead><tr><th style="width:150px">용어</th><th>이 강의에서의 뜻</th></tr></thead>
+      <tbody>
+        <tr><td>결정 모델</td><td>상태와 타입이 정해진 질문을 받아, 글 대신 확률이 붙은 답을 돌려주는 모델. Jev가 첫 공개 사례다</td></tr>
+        <tr><td>상태 (state)</td><td>판단의 근거가 되는 입력. 텍스트나 JSON이며 Jev는 질문 하나와 합쳐 32k, 요청 전체 64k 토큰까지 받는다</td></tr>
+        <tr><td>질문 타입</td><td>Choice(선택), Score(순서 척도), Noul(참일 확률). 1.14에서 이미지용 Box(경계 상자)가 더해졌다</td></tr>
+        <tr><td>확신도</td><td>모델이 자기 답에 붙이는 확신의 크기. 코드가 자동 실행 여부를 가르는 기준이 된다</td></tr>
+        <tr><td>보정 (calibration)</td><td>말한 확신도와 실제로 맞는 비율이 일치하는 정도. 90%라고 말한 답이 실제로 90% 맞으면 잘 보정된 것이다</td></tr>
+        <tr><td>루브릭</td><td>선택지마다 무엇에 해당하고 무엇에 해당하지 않는지를 적은 정의 묶음. 프롬프트 대신 쓰는 판단 기준</td></tr>
+        <tr><td>하네스</td><td>모델을 둘러싼 실행 환경. 권한, 재시도, 검증, 사람 승인, 기억 저장 규칙 같은 통제 장치 전체</td></tr>
+        <tr><td>Jev 엔지니어링</td><td>LLM은 쓰고, 결정 모델은 판단하고, 코드는 행동하도록 역할을 나누는 설계 방식</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>핵심 구분</b><p>확신도는 모델이 말하는 값이고, 보정은 그 값을 믿어도 되는지에 대한 측정이다. 이 둘을 섞으면 뒤의 '한계와 검증'에서 다룰 문제를 놓친다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">01 배경</span><span>이전에 있던 판단 도구들</span></div>
+      <h2>판단만 하는 도구는 전에도 있었고, 결정 모델은 그 사이에 자리 잡았다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl">
+      <thead><tr><th>방식</th><th>예</th><th>강점</th><th>한계</th></tr></thead>
+      <tbody>
+        <tr><td>과제별 분류기</td><td>fastText, SetFit</td><td>빠르고 싸다</td><td>과제마다 라벨을 모아 학습해야 한다</td></tr>
+        <tr><td>임베딩 라우터</td><td>semantic-router, RouteLLM</td><td>학습이 적고 빠르다</td><td>정해진 경로 선택에 한정된다</td></tr>
+        <tr><td>LLM 판정</td><td>LLM-as-a-Judge, 구조화 출력</td><td>학습 없이 자연어 기준을 쓴다</td><td>판단마다 생성 호출이라 느리고 비싸다</td></tr>
+        <tr style="background:var(--accent-soft)"><td>결정 모델</td><td>Jev와 후속 모델들</td><td>학습 없이 질문과 선택지만 정의하고 확률을 받는다</td><td>생성하지 못하고, 확률의 보정은 따로 검증해야 한다</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>위치</b><p>Waehner는 결정 모델을 과제마다 학습하는 고전 ML과 생성형 LLM 사이에 두고, 둘을 대체하기보다 보완한다고 정리했다.</p></div>
+  </section>
+
+  <!-- 02 Jev -->
+  <section class="sec" id="jev" data-name="Jev">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 Jev</span><span>그림 2 · Jev의 입력과 출력</span></div>
+      <h2>Jev는 상태와 질문을 받아 확률이 붙은 답을 한 번에 돌려준다</h2>
+    </div>
+    <div class="flow5 rv">
+      <div class="st"><b>상태 (state)</b><span>텍스트·JSON</span></div><div class="ar">→</div>
+      <div class="st"><b>질문 목록</b><span>Choice · Score · Noul</span></div><div class="ar">→</div>
+      <div class="st solid"><b>Jev</b><span>한 번의 처리 · 병렬 평가</span></div><div class="ar">→</div>
+      <div class="st red"><b>타입이 정해진 답</b><span>선택 + 확률 + 확신도</span></div><div class="ar">→</div>
+      <div class="st"><b>코드</b><span>임계값 확인 후 행동</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="panel rv"><h3>하는 일</h3><ul class="sq"><li>모든 질문을 한 번에 병렬로 평가한다</li><li>답을 토큰 단위로 하나씩 이어 쓰지 않는다</li><li>답은 항상 주어진 선택지 안에서 나온다</li></ul></div>
+      <div class="panel rv"><h3>하지 않는 일</h3><ul class="sq"><li>글이나 코드를 쓰지 않는다. 회사는 문자열 생성을 포기했다고 밝혔다</li><li>판단 이유를 문장으로 돌려주지 않는다</li><li>목록에 없는 선택지는 고르지 않는다</li></ul></div>
+    </div>
+    <div class="redline rv"><b>핵심</b><p>출력이 확률 값이므로 코드는 파싱 없이 바로 분기 조건으로 쓸 수 있다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 Jev</span><span>질문의 세 가지 타입</span></div>
+      <h2>질문은 Choice, Score, Noul 세 가지 타입으로 정의한다</h2>
+    </div>
+    <div class="split">
+      <div class="tscroll rv"><table class="tbl sm" style="margin-top:0">
+        <thead><tr><th>타입</th><th>묻는 것</th><th>돌려주는 것</th><th>쓰임 예</th></tr></thead>
+        <tbody>
+          <tr><td>Choice</td><td>이 선택지들 중 무엇인가 (1~255개)</td><td>선택, 모든 선택지의 확률, 확신도</td><td>요청 종류 분류, 모델 등급 고르기</td></tr>
+          <tr><td>Score</td><td>1~10단계 척도에서 어디인가</td><td>확률 가중 기댓값, 단계별 확률, 확신도</td><td>로그 심각도, 위험도 등급</td></tr>
+          <tr><td>Noul</td><td>이 문장이 참인가</td><td>참일 확률 하나. 확신도 필드 없음</td><td>이 명령은 파괴적인가</td></tr>
+        </tbody>
+      </table></div>
+      <div class="rv"><pre class="code">state: "사용자가 실행하려는 명령: rm -rf ./dist"
+questions:
+  - noul:   "이 명령은 되돌릴 수 없는 삭제를 일으킨다"
+  - choice: "명령의 종류" [삭제, 읽기, 설치, 네트워크, unknown]
+  - score:  "위험도" [낮음, 중간, 높음]</pre>
+      <p class="code-cap">질문 구성 예시 (구조 설명용 의사 형식). 실제 요청 형식은 TypeSafe API 문서를 따른다. 1.14에는 이미지 속 경계 상자를 묻는 Box 타입이 더해졌다.</p></div>
+    </div>
+    <div class="redline rv"><b>설계 요령</b><p>하나의 판단을 여러 타입의 질문으로 쪼개 함께 보내면, 한 번의 호출로 여러 신호를 얻는다.</p></div>
+
+    <div class="brk"></div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">실습</span><strong>같은 명령, 세 가지 질문 타입</strong><span class="hint">명령을 골라 보기</span></div>
+      <div class="demo-b">
+        <div class="chips" id="tyCmds"></div>
+        <div class="qcols">
+          <div class="qcol"><h5>Choice<small>명령의 종류</small></h5><div class="b" id="tyChoice"></div></div>
+          <div class="qcol"><h5>Score<small>위험도 1~3</small></h5><div class="b" id="tyScore"></div></div>
+          <div class="qcol"><h5>Noul<small>되돌릴 수 없는 삭제인가</small></h5><div class="b"><div class="gauge"><i id="tyG"></i></div><div class="qbig" id="tyP">0.00</div><div class="code-cap">참일 확률 하나 · 확신도 필드 없음</div></div></div>
+        </div>
+      </div>
+      <div class="demo-f">DROP TABLE의 0.95와 rm -rf ./dist의 0.63은 AI Builder Club 글쓴이의 시연값이고, 나머지 확률은 모두 구조를 보여 주기 위한 예시 값이다.</div>
+    </div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 Jev</span><span>공개 사양</span></div>
+      <h2>Jev의 공개 사양은 가격이 낮은 대신 컨텍스트와 언어에 제약이 있다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl sm">
+      <thead><tr><th style="width:110px">항목</th><th>값</th><th style="width:160px">출처</th></tr></thead>
+      <tbody>
+        <tr><td>모델 ID</td><td>jev-1.13.0, jev-1.14.0. 별칭 jev-latest는 10월 하순부터 1.14.0을 가리킨다</td><td>TypeSafe 문서, 1.14 글</td></tr>
+        <tr><td>엔드포인트</td><td><code>POST https://api.typesafe.ai/v1/systemone</code></td><td>TypeSafe 문서</td></tr>
+        <tr><td>컨텍스트</td><td>요청당 64k 토큰(상태와 모든 질문), 질문당 32k(상태와 질문 하나)</td><td>TypeSafe 문서</td></tr>
+        <tr><td>가격</td><td>입력 100만 토큰당 $0.042 (10억 토큰당 $42). 출력은 현재 무료</td><td>TypeSafe 문서</td></tr>
+        <tr><td>선택지 수</td><td>Choice 질문 하나에 1~255개. 넘으면 2단계 처리로 바뀐다</td><td>TypeSafe 문서, 출시 글</td></tr>
+        <tr><td>처리 한도</td><td>조직마다 콘솔에서 정해지고 넘으면 429 오류. 문서에 공개 수치는 없다</td><td>TypeSafe 문서</td></tr>
+        <tr><td>학습</td><td>RLCD (Reinforcement Learning for Calibrated Decisions)</td><td>출시 글</td></tr>
+        <tr><td>언어</td><td>영어가 가장 정확하다. 한중일 언어를 포함한 다른 언어는 처리하지만 같은 수준은 아니다</td><td>TypeSafe 문서</td></tr>
+        <tr><td>실험 기능</td><td>이미지 입력(1.13부터)과 262k 긴 컨텍스트는 헤더로 켜는 '위험 구역' 기능이다</td><td>TypeSafe 문서, 1.14 글</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>주의</b><p>해설 글에 도는 처리 한도 수치는 공식 문서에 없다. 실제 한도는 각자 조직 콘솔에서 확인하고, 실습에서는 버전을 jev-1.13.0처럼 고정한다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 Jev</span><span>속도와 비용 주장</span></div>
+      <h2>속도와 비용 수치는 대부분 회사 자체 측정이다</h2>
+    </div>
+    <div class="grid g3">
+      <div class="stat rv"><div class="big sm">40~200×</div><h4>호출당 속도 차이 <span class="who co">회사 주장</span></h4><p>출시 글. LangChain 글은 '최대 200배 빠르고 400배 싸다'고 회사 발표를 옮겼다</p></div>
+      <div class="stat rv"><div class="big sm">70~500ms</div><h4>종단 간 응답 시간 <span class="who co">회사 주장</span></h4><p>출시 글 (TypeSafe, 2026. 09. 15)</p></div>
+      <div class="stat rv"><div class="big sm" style="color:var(--accent)">302ms</div><h4>스크립트 호출 중앙값 <span class="who ind">글쓴이 측정</span></h4><p>최장 525ms. 훅 전체로는 749~1,563ms, 4,375ms 타임아웃 1회 (AI Builder Club)</p></div>
+    </div>
+    <div class="mini rv">같은 회사 안에서도 기준에 따라 숫자가 다르다. 출시 글은 호출 하나 기준 40~200배를, 홈페이지는 워크플로 기준 193.6배 빠르고 444.6배 싸다는 수치를 쓴다.</div>
+    <div class="redline rv"><b>읽는 법</b><p>'최대' 수치는 회사가 고른 조건의 상한이다. 실제 훅 안에서 잰 값은 네트워크와 처리 시간이 더해져 1초를 넘기도 했다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 Jev</span><span>TypeSafe와 출시 직후</span></div>
+      <h2>TypeSafe는 InstructGPT 저자가 세운 회사이고, Jev는 2주 만에 빠르게 퍼졌다</h2>
+    </div>
+    <div class="box3">
+      <div class="panel rv"><h3>회사</h3><ul class="sq"><li>공동창업자 겸 CEO Diogo Almeida (DCVC 발표)</li><li>OpenAI에서 InstructGPT 논문(arXiv 2203.02155)의 주요 저자로 참여</li><li>OpenAI 재직 약 4년 반으로 알려짐 (2차 출처)</li></ul></div>
+      <div class="panel thick rv"><h3>확산</h3><ul class="sq"><li>09. 17 Vercel 게이트웨이 연결 뒤 14일 만에 유료 팀의 35.3%가 사용</li><li>2위 Sonnet 5.5(18.1%)의 약 두 배 (Vercel)</li><li>Vercel이 위험 명령 분류기를 GPT-6 Luna에서 Jev로 교체 (TechCrunch 보도)</li></ul></div>
+      <div class="panel rv"><h3>투자</h3><ul class="sq"><li>09. 15 시드 4천만 달러, DCVC 주도</li><li>10. 09 8억 7천만 달러, 기업가치 75억 달러</li><li>a16z 주도, Sequoia·DCVC 참여 (TypeSafe 발표)</li></ul></div>
+    </div>
+    <div class="redline rv"><b>주의</b><p>Vercel 수치는 그 게이트웨이를 거친 유료 팀만 반영한다. 시장 전체의 점유율로 읽지 않는다.</p></div>
+  </section>
+
+  <!-- 03 Jev 엔지니어링 -->
+  <section class="sec" id="eng" data-name="Jev 엔지니어링">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>그림 3 · 역할 분담</span></div>
+      <h2>Jev 엔지니어링은 LLM이 쓰고, Jev가 판단하고, 코드가 행동하는 분업이다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl">
+      <thead><tr><th>역할</th><th>담당</th><th>실행 시점</th><th>출력</th></tr></thead>
+      <tbody>
+        <tr><td>쓰기 (writes)</td><td>LLM (Claude Code, Codex 등)</td><td>예외 경로에서만</td><td>계획, 코드, 글, 루브릭 수정안</td></tr>
+        <tr style="background:var(--accent-soft)"><td>판단 (decides)</td><td>Jev</td><td>매 단계</td><td>목록에 있는 선택지의 확률</td></tr>
+        <tr><td>행동 (acts)</td><td>결정적 코드</td><td>매 단계</td><td>임계값 확인, 행동, 새 상태</td></tr>
+      </tbody>
+    </table></div>
+    <div class="mini rv">용어의 출처: 2026. 09. 18 X 사용자 0xCodila가 10단계 로드맵에서 "LLM writes, agents act, Jev chooses the next move"라고 썼고, 다음 날 0xRicker가 이를 상태·판단·행동·검증·다음 상태의 제어 시스템으로 해석했다. 9. 22 AI Builder Club 글이 "LLM writes, Jev decides, code acts"를 제목으로 정리했다. X 게시물 원문은 확인하지 못했고 이 글의 기록을 따른다.</div>
+    <div class="redline rv"><b>추정</b><p>무인 루프의 약 90% 단계에는 큰 모델이 필요 없었다는 수치는 글쓴이 개인의 추정이며 측정값이 아니다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>제어 시스템으로 보기</span></div>
+      <h2>에이전트 루프를 상태, 판단, 행동, 검증, 다음 상태의 제어 시스템으로 본다</h2>
+    </div>
+    <div class="flow5 rv">
+      <div class="st"><b>상태</b><span>입력·기록</span></div><div class="ar">→</div>
+      <div class="st solid"><b>판단</b><span>결정 모델 · 확률</span></div><div class="ar">→</div>
+      <div class="st"><b>행동</b><span>코드 · 임계값</span></div><div class="ar">→</div>
+      <div class="st red"><b>검증</b><span>결정적 검사 + 판단</span></div><div class="ar">→</div>
+      <div class="st"><b>다음 상태</b><span>확정된 결과만 기록</span></div>
+    </div>
+    <div class="loopback rv">↺ 다시 처음으로</div>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="panel thick rv"><h3>확신도가 높을 때</h3><ul class="sq"><li>코드가 미리 정한 행동을 바로 실행한다</li><li>LLM을 부르지 않는다</li><li>비용과 지연이 결정 모델 호출 한 번에 머문다</li></ul></div>
+      <div class="panel rv"><h3>확신도가 낮거나 unknown일 때</h3><ul class="sq"><li>상위 모델이나 사람에게 넘긴다</li><li>LLM이 원인을 보고 루브릭 수정안을 쓴다</li><li>수정안은 검증을 거쳐 다음 판단부터 쓰인다</li></ul></div>
+    </div>
+    <div class="redline rv"><b>효과</b><p>판단이 확률로 나오기 때문에 '언제 큰 모델을 부를지'가 코드 한 줄의 임계값 문제로 바뀐다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>기법 1 · Guard Hook</span></div>
+      <h2>가드 훅은 명령을 실행하기 전에 파괴적인지 묻고 확률 구간으로 막는다</h2>
+    </div>
+    <div class="split">
+      <div class="ex rv"><h4>입력 명령과 판정 (글쓴이 시연)</h4>
+        <div class="row"><code>DROP TABLE users;</code><b>파괴적 0.95</b><i class="deny">차단</i></div>
+        <div class="row"><code>rm -rf ./dist</code><b>파괴적 0.63</b><i class="ask">사용자에게 묻기</i></div>
+        <div class="row"><code>ls -la</code><b>낮음 (예시)</b><i>허용</i></div>
+      </div>
+      <div>
+        <div class="panel rv"><h3>핵심 아이디어</h3><p style="margin:0">에이전트가 도구를 쓰기 직전(PreToolUse 훅)에 Noul 질문 '이 명령은 파괴적인가'와 Choice 질문 '명령의 종류'를 함께 보낸다. <b>0.7 이상이면 차단, 0.35 이상이면 사용자에게 묻는다.</b> Jev 호출이 실패하면 허용하지 않고 사용자에게 묻는다.</p></div>
+        <p class="srcs rv">원본 출처: AI Builder Club, 2026. 09. 22 · LangChain AutoModeMiddleware도 같은 목적 (2026. 09. 17). 호출이 실패했을 때의 기본값은 '묻기'로 둔다. 임계값은 행동의 되돌리기 어려움에 맞춰 정한다.</p>
+      </div>
+    </div>
+    <div class="redline rv"><b>주의</b><p>시연은 명령 여섯 개 규모라 평가가 아니다. 'ls -la'의 값은 설명을 위한 예시다. 분류기 하나에 맡기면 단일 실패 지점이 되므로 권한 설정은 그대로 둔다.</p></div>
+
+    <div class="brk"></div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">실습</span><strong>임계값 두 개로 허용·묻기·차단 가르기</strong><span class="hint">임계값을 움직여 놓친 위험과 불필요한 묻기를 보기</span></div>
+      <div class="demo-b">
+        <div class="gd">
+          <div class="lp" style="grid-template-columns:1fr">
+            <div class="ctl">
+              <label>차단 임계값 <b id="gdDv">0.70</b><input type="range" id="gdD" min="0.05" max="1" step="0.05" value="0.70"></label>
+              <label>묻기 임계값 <b id="gdAv">0.35</b><input type="range" id="gdA" min="0" max="0.95" step="0.05" value="0.35"></label>
+              <label class="toggle" style="margin:0"><input type="checkbox" id="gdFail"> Jev 호출 실패(시간 초과) 흉내 내기</label>
+            </div>
+            <div class="sum"><div class="bad">놓친 위험<b id="gdMiss">0</b></div><div>불필요한 묻기·차단<b id="gdOver">0</b></div><div>자동 처리<b id="gdAuto">0</b></div></div>
+          </div>
+          <div id="gdRows"></div>
+        </div>
+      </div>
+      <div class="demo-f">'정답'은 사람이 붙인 라벨(위험 = 되돌릴 수 없는 변경)이다. DROP 0.95와 rm 0.63은 글쓴이 시연값, 나머지 명령과 확률은 예시다. 실습에서는 명령 30개를 모아 위험한 명령을 하나도 놓치지 않는 임계값부터 찾는다.</div>
+    </div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>기법 2 · Model Router</span></div>
+      <h2>모델 라우터는 요청마다 모델 등급을 고르고, 확신이 낮으면 한 단계 위로만 올린다</h2>
+    </div>
+    <div class="split">
+      <div class="ex rv"><h4>라우팅 흐름</h4>
+        <div class="row"><span>사용자 요청</span><b>Choice: fast / powerful</b><i>확신도 확인</i></div>
+        <div class="row"><span>확신도 높음</span><b>고른 등급 그대로</b><i>실행</i></div>
+        <div class="row"><span>확신도 낮음</span><b>한 단계 위 등급으로</b><i class="ask">실행 (아래로는 내리지 않음)</i></div>
+      </div>
+      <div>
+        <div class="panel rv"><h3>핵심 아이디어</h3><p style="margin:0">요청을 받으면 Choice 질문으로 모델 등급을 고른다. 확신도가 낮으면 한 단계 위 모델로만 올리고, 아래로는 내리지 않는다. 비용을 아끼되 품질 손해는 피하는 <b>비대칭 규칙</b>이다.</p></div>
+        <p class="srcs rv">원본 출처: AI Builder Club, 2026. 09. 22 · LangChain ModelRouterMiddleware (최신 사용자 메시지로 판단하고 실행이 끝날 때까지 유지). 글쓴이 측정: 전형적 호출 약 500 입력 토큰, 약 $0.00002, 280~610ms. 등급 정의는 루브릭으로 관리한다.</p>
+      </div>
+    </div>
+    <div class="redline rv"><b>설계 원칙</b><p>불확실할 때는 비싼 쪽으로 기운다. 잘못 싼 모델로 보낸 손해가 잘못 비싼 모델로 보낸 비용보다 크기 때문이다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>기법 3 · Log Cron</span></div>
+      <h2>로그 분류 크론은 처음 보는 유형만 LLM에 넘겨 루브릭을 키운다</h2>
+    </div>
+    <div class="split">
+      <div class="ex rv"><h4>글쓴이의 로그 재생 결과</h4>
+        <div class="row"><span>로그 600건</span><b>템플릿 7개로 묶음</b><i>중복 제거</i></div>
+        <div class="row"><span>Jev 호출 8회</span><b>입력 7,014토큰 · $0.00029</b><i>중앙값 302ms</i></div>
+        <div class="row"><span>6개 템플릿</span><b>확신도 0.99~1.00</b><i>자동 분류</i></div>
+        <div class="row"><span>1개 템플릿</span><b>확신도 0.50</b><i class="ask">Claude Code로 넘김</i></div>
+      </div>
+      <div>
+        <div class="panel rv"><h3>핵심 아이디어</h3><p style="margin:0">로그를 템플릿으로 묶어 중복을 없앤 뒤 rubric.json 기준으로 분류한다(확신도 기준 0.8). 심각도는 0~2 Score로 받아 1.5 이상이면 담당자를 호출한다. 처음 보는 템플릿만 Claude Code에 넘겨, 검증된 추가형 루브릭 수정안을 받는다.</p></div>
+        <p class="srcs rv">원본 출처: AI Builder Club, 2026. 09. 22. 넘겨받은 1건에 Claude Code가 새 분류를 추가: $0.0834, 10.4초. 이 한 번의 비용이 같은 주기 Jev 비용($0.000295)의 약 283배.</p>
+      </div>
+    </div>
+    <div class="redline rv"><b>읽는 법</b><p>비싼 모델은 사라지지 않았다. 처음 보는 경우를 해결해 루브릭을 넓히는 일에만 쓰이고, 그 결과는 다음부터 싼 판단으로 처리된다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>기법 4 · 프롬프트 대신 루브릭</span></div>
+      <h2>판단 기준을 프롬프트 문장에서 꺼내 버전을 관리하는 루브릭 데이터로 옮긴다</h2>
+    </div>
+    <div class="split">
+      <div class="rv"><pre class="code">{
+  "id": "destructive_delete",
+  "what": "파일·DB를 되돌릴 수 없게 지우는 명령",
+  "not_for": "빌드 산출물만 지우는 정리 명령 (별도 항목)",
+  "examples": ["DROP TABLE users;", "rm -rf ~/projects"]
+}
+선택지 목록: [destructive_delete, cleanup, read,
+             install, network, unknown]</pre>
+      <p class="code-cap">루브릭 한 항목의 구조 (예시). AI Builder Club이 권장한 what · not_for · examples 구조를 따라 새로 쓴 예시다.</p></div>
+      <div class="grid" style="margin-top:0;gap:14px">
+        <div class="panel rv"><h3>규칙</h3><ul class="sq"><li>선택지는 닫힌 집합으로 정하고 unknown을 꼭 넣는다</li><li>항목마다 해당하지 않는 경우(not_for)를 적는다</li><li>루브릭은 코드처럼 버전을 붙여 관리한다</li></ul></div>
+        <div class="panel rv"><h3>이유</h3><ul class="sq"><li>결정 모델은 목록에 없는 답을 못 고르므로 unknown이 탈출구가 된다</li><li>경계 사례가 not_for에 쌓이면서 기준이 정밀해진다</li><li>어느 버전의 기준으로 판단했는지 추적할 수 있다</li></ul></div>
+      </div>
+    </div>
+    <div class="redline rv"><b>1주차와 연결</b><p>1주차의 '독려 문구에서 범위 정하기로'라는 변화가 여기서는 '문장 대신 정의된 선택지'라는 형태로 한 단계 더 나아간다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>기법 5 · 확신도에 따른 분기</span></div>
+      <h2>확신도가 낮은 답은 자동으로 적용하지 않고 위로 넘긴다</h2>
+    </div>
+    <div class="steps rv">
+      <div><b>실제 사례에 라벨</b><span>실제로 들어오는 입력 20~50개에 정답 라벨을 붙인다</span></div>
+      <div><b>행동마다 하한 설정</b><span>되돌리기 어려운 행동일수록 확신도 하한을 높게 둔다</span></div>
+      <div><b>하한 미만은 위로</b><span>상위 모델이나 사람에게 넘기고, 넘긴 비율을 기록한다</span></div>
+      <div><b>자동 적용 금지</b><span>확신도가 낮은 답은 어떤 경우에도 자동으로 실행하지 않는다</span></div>
+      <div><b>모델 버전 고정</b><span>jev-latest 같은 별칭은 기준이 몰래 바뀌게 만든다</span></div>
+    </div>
+    <div class="redline rv"><b>근거</b><p>라벨 20~50개, 버전 고정은 AI Builder Club의 권고다. 실제로 jev-latest는 10월 하순 1.14.0으로 바뀌었다. 라벨이 몇 개면 충분한지는 과제마다 직접 측정한다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>LangChain의 통합</span></div>
+      <h2>LangChain은 Jev를 미들웨어로 만들어 에이전트 하네스에 끼웠다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl sm">
+      <thead><tr><th style="width:220px">구성 요소</th><th>하는 일</th></tr></thead>
+      <tbody>
+        <tr><td>langchain-typesafe 패키지</td><td>TypeSafeClassifier로 Jev를 감싼다. 상태와 질문을 넣어 .invoke()로 분류 결과를 받는다</td></tr>
+        <tr><td>상태로 쓸 수 있는 것</td><td>텍스트, 구조화 데이터, LangChain 메시지. 노드나 미들웨어 훅 안에서 부를 수 있다</td></tr>
+        <tr><td>ModelRouterMiddleware</td><td>기준에 따라 fast와 powerful 모델 중 하나를 고르고, 실행이 끝날 때까지 유지한다</td></tr>
+        <tr><td>AutoModeMiddleware</td><td>tools=["bash"]처럼 지정한 도구 호출의 위험을 검사해 실행 전에 막는다</td></tr>
+        <tr><td>create_agent</td><td>두 미들웨어를 에이전트에 붙인다. 두 미들웨어 모두 langchain_typesafe.experimental.middleware에서 가져온다</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>날짜</b><p>이 글은 2026. 09. 17에 나왔다. 출시 이틀 뒤이고 'Jev 엔지니어링'이라는 말이 생기기 전이다. 언급된 초기 사용 사례(Browserbase, 실거래 에이전트, 메일 분류)는 세부가 공개되지 않았다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>그림 4 · 3층 검증</span></div>
+      <h2>운영 하네스에서는 결정 모델을 3층 검증의 가운데 층에 둔다</h2>
+    </div>
+    <div class="flow5 rv">
+      <div class="st"><b>결과 후보</b><span>에이전트의 답·행동</span></div><div class="ar">→</div>
+      <div class="st"><b>1층 결정적 검사</b><span>모델 호출 없이 명백한 실패 거부</span></div><div class="ar">→</div>
+      <div class="st solid"><b>2층 결정 모델</b><span>확신이 높은 경우만 승인·거부</span></div><div class="ar">→</div>
+      <div class="st red"><b>3층 독립 LLM</b><span>불확실한 경우만 검토</span></div><div class="ar">→</div>
+      <div class="st"><b>기억 저장</b><span>검증된 결론만</span></div>
+    </div>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="panel rv"><h3>같은 하네스에 들어간 통제 장치</h3><ul class="sq"><li>재시도·대체 모델·호출 횟수 상한</li><li>개인정보 가림, 인젝션 걸러내기, 권한 집행</li><li>쓰기 행동 전 사람 승인</li><li>막힘 감지와 실행 예산</li></ul></div>
+      <div class="panel thick rv"><h3>결정 모델이 맡은 자리</h3><ul class="sq"><li>요청 분류와 도구 위험 검사</li><li>모델 라우팅</li><li>증거 검증의 확률 구간 판정</li></ul></div>
+    </div>
+    <div class="redline rv"><b>원문 인용</b><p>"Jev does not replace permissions, deterministic checks, or human approval." 결정 모델의 확률은 더 큰 통제 시스템 안의 신호 하나다 (Daily Dose of DS, 2026. 10. 01).</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 Jev 엔지니어링</span><span>실습 · 가드 훅 만들기</span></div>
+      <h2>실습: 결정 모델로 위험 명령 가드 훅을 만든다</h2>
+    </div>
+    <div class="split">
+      <div class="rv"><pre class="code">def pre_tool_use(command):
+    try:
+        r = decide(state=command, questions=[
+            noul("이 명령은 되돌릴 수 없는 변경을 일으킨다"),
+            choice("종류", RUBRIC_V3)])      # 루브릭 버전 고정
+    except Timeout:
+        return ASK_USER                      # 실패하면 허용하지 않는다
+    p = r[0].prob
+    if p >= 0.70: return DENY
+    if p >= 0.35 or r[1].choice == "unknown": return ASK_USER
+    return ALLOW</pre>
+      <p class="code-cap">의사 코드 (특정 SDK의 실제 함수명이 아니다). 임계값 0.70 / 0.35는 AI Builder Club 시연값이다. 실습에서는 각자 라벨링한 명령으로 다시 정한다.</p></div>
+      <div class="steps rv" style="margin-top:0;grid-template-columns:1fr">
+        <div><b>명령 30개 모으기</b><span>평소 에이전트가 실행하는 명령을 위험한 것과 안전한 것을 섞어 모은다</span></div>
+        <div><b>라벨 붙이기</b><span>사람이 '되돌릴 수 없는 변경인가'를 직접 판정한다</span></div>
+        <div><b>임계값 맞추기</b><span>위험한 명령을 하나도 놓치지 않는 값부터 찾는다</span></div>
+      </div>
+    </div>
+    <div class="redline rv"><b>실습 규칙</b><p>실습은 격리된 디렉터리에서 한다. 판정 결과와 상관없이 실제 삭제 명령은 실행하지 않는다.</p></div>
+  </section>
+
+  <!-- 04 결정 모델 계열 -->
+  <section class="sec" id="family" data-name="결정 모델 계열">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 결정 모델 계열</span><span>그림 5 · 결정 모델 연표</span></div>
+      <h2>Jev 이후 5주 만에 결정 모델이 하나의 범주가 되었다</h2>
+    </div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">연표</span><strong>결정 모델 5주 연표</strong><span class="hint">날짜를 누르기 · 점선은 보도에만 있는 날짜</span></div>
+      <div class="demo-b">
+        <div class="tl tl11" id="tl2" role="tablist" aria-label="날짜"></div>
+        <div class="tl-card" id="tl2Card" aria-live="polite"></div>
+        <div class="tl-ctl"><button class="btn" id="tl2Prev" type="button">← 이전</button><button class="btn primary" id="tl2Play" type="button">자동 재생</button><button class="btn" id="tl2Next" type="button">다음 →</button></div>
+      </div>
+      <div class="demo-f">OpenAI의 9. 29 제한 프리뷰와 Jev의 대기열 해제일은 보도에만 있다. OpenAI 공식 변경 기록에는 10. 06 베타와 10. 22 정식 출시만 있다.</div>
+    </div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 결정 모델 계열</span><span>상용 결정 모델 비교</span></div>
+      <h2>대형 기업들이 같은 형식의 결정 모델을 연달아 내놓았다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl sm">
+      <thead><tr><th>모델</th><th>회사 · 날짜</th><th>공개 형태</th><th>입력</th><th>가격 (입력 100만 토큰)</th><th>비고</th></tr></thead>
+      <tbody>
+        <tr><td>Jev</td><td>TypeSafe · 09. 15</td><td>API (가중치 비공개)</td><td>텍스트 (이미지는 실험 기능)</td><td>$0.042</td><td>확률·확신도 반환</td></tr>
+        <tr><td>Decisions API</td><td>OpenAI · 10. 06 베타, 10. 22 정식</td><td>API</td><td>텍스트, 이미지, JSON</td><td>$0.10</td><td>gpt-6-luna 기반. 확률·확신도 반환</td></tr>
+        <tr><td>Microsoft-Decision-1</td><td>Microsoft · 10. 09</td><td>Foundry, OpenRouter</td><td>텍스트</td><td>$0.042</td><td>Qwen3.5-9B 후속 학습</td></tr>
+        <tr><td>Clef · Clef-flash</td><td>Cloudflare · 10. 01</td><td>오픈 웨이트 (Apache 2.0)</td><td>텍스트, 64K</td><td>Workers AI 요금</td><td>27B · 9B</td></tr>
+        <tr><td>Clef-omni</td><td>Cloudflare · 10. 09</td><td>Workers AI</td><td>오디오, 영상, 이미지, 텍스트</td><td>$0.15</td><td>Qwen3-Omni-30B-A3B 기반. 라이선스 미표기</td></tr>
+        <tr><td>pplx-decider</td><td>Perplexity · 10. 01~10. 16 (집계 기준)</td><td>오픈 웨이트 (Apache 2.0)</td><td>텍스트</td><td>v1.2 $0.02</td><td>Qwen3.8-27B 미세조정</td></tr>
+        <tr><td>d1 계열</td><td>Liquid AI · 10. 07 공개, 10. 15 d1-ultra</td><td>오픈 웨이트 (LFM Open License v1.0)</td><td>omni는 멀티모달</td><td>확인 필요</td><td>d1-3B, d1-omni-600M</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>읽는 법</b><p>날짜와 가격은 회사 원문을 우선했다. 라이선스가 모델마다 다르다(Apache 2.0, LFM Open License). 상업적으로 쓰기 전에 각 모델 카드를 다시 본다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 결정 모델 계열</span><span>오픈소스 재현</span></div>
+      <h2>오픈소스 재현은 인코더 모델과 경량 Qwen 변형 두 갈래로 나왔다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl sm">
+      <thead><tr><th>구현</th><th>만든 곳</th><th>구조</th><th>알려진 결과</th></tr></thead>
+      <tbody>
+        <tr><td>Laya</td><td>ConvAI Innovations</td><td>인코더 (ModernBERT-large 421M, 다국어 mmBERT-base 322M), Apache 2.0</td><td>모델 카드의 Banking77: Laya 0.425, Jev 0.870. 라벨 수가 77개와 72개로 달라 직접 비교는 어렵다</td></tr>
+        <tr><td>Kev</td><td>Jared Palmer</td><td>Qwen 변형 + 포인터 헤드. Jev 엔드포인트 대체</td><td>Opper 시험(362문항): 정확도 차이는 잡음 범위, 보정 오차는 Jev 0.027~0.049, Kev 0.044~0.137</td></tr>
+        <tr><td>SemIf (구 OpenJev)</td><td>TheoLeeCJ</td><td>오픈 모델의 로짓에서 선택지 확률을 읽음</td><td>실험 단계 (목록 기준)</td></tr>
+        <tr><td>NanoJev</td><td>TianyuCodings</td><td>Qwen3-0.6B + 병렬 판단 헤드</td><td>연구용 (목록 기준)</td></tr>
+        <tr><td>jevlike</td><td>vinnylarouge</td><td>바이트 임베딩 또는 고정 Qwen2.5-0.5B 인코더</td><td>교육용 출발점 (목록 기준)</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>공통점</b><p>Tom's Hardware는 상용 제품을 포함한 상당수가 경량 Qwen에 입력·출력·판단 층을 덧붙인 구조라고 보도했다. Microsoft, Perplexity, Cloudflare(Clef-omni)의 공개 자료가 Qwen 기반임을 밝힌다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 결정 모델 계열</span><span>표준화</span></div>
+      <h2>요청 형식이 표준이 되면서 뒤에 있는 모델을 바꿔 끼울 수 있게 되었다</h2>
+    </div>
+    <div class="box3">
+      <div class="panel thick rv"><h3>공통 형식</h3><ul class="sq"><li>Jev의 요청 형식이 사실상 표준이 됨</li><li>Kev처럼 Jev 엔드포인트를 그대로 대체하는 구현 등장</li><li>TypeSafe도 OpenAI·Anthropic 모델로 대신 처리하는 어댑터 공개</li></ul></div>
+      <div class="panel rv"><h3>실행 환경</h3><ul class="sq"><li>llama.cpp에 /v1/systemone 엔드포인트 병합 (10. 02)</li><li>vLLM에 같은 엔드포인트 병합 (10. 08)</li><li>내 장비에서 오픈 웨이트 결정 모델 실행</li></ul></div>
+      <div class="panel rv"><h3>평가</h3><ul class="sq"><li>Decision Index (Hugging Face 커뮤니티 Space)</li><li>Vals AI의 ClaimBench</li><li>보정 오차를 따로 재는 제3자 시험</li></ul></div>
+    </div>
+    <div class="redline rv"><b>주의</b><p>회사마다 자기 인터페이스에 맞는 부분집합으로 벤치마크를 돌려 수치가 엇갈린다 (Waehner). 같은 이름의 점수라도 같은 잣대인지 먼저 본다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 결정 모델 계열</span><span>갈래의 분화</span></div>
+      <h2>결정 모델은 멀티모달, 짧은 추론, 보안 전용, 미세조정 갈래로 나뉘고 있다</h2>
+    </div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;margin-top:22px">
+      <div class="panel rv"><h3>멀티모달</h3><ul class="sq"><li>OpenAI Decisions API: 텍스트·이미지·JSON</li><li>Cloudflare Clef-omni: 오디오·영상·이미지·텍스트</li><li>Jev: 이미지는 실험 기능, 1.14에 경계 상자(Box) 질문</li></ul></div>
+      <div class="panel rv"><h3>짧은 추론</h3><ul class="sq"><li>기존 LLM을 결정 인터페이스 뒤에 두는 방식</li><li>답하기 전에 잠깐 추론하는 방식</li><li>둘 다 지연을 늘리는 대신 어려운 사례의 정확도를 높인다</li></ul></div>
+      <div class="panel rv"><h3>보안 전용</h3><ul class="sq"><li>Superagent Security-One (10. 04, 27B, Apache 2.0)</li><li>프롬프트, 도구 호출, 코드 변경, 경보에 대한 보안 판단</li></ul></div>
+      <div class="panel rv"><h3>미세조정</h3><ul class="sq"><li>결정 모델을 바탕으로 자체 라벨로 미세조정</li><li>강화학습 미세조정 플랫폼이 지원</li></ul></div>
+    </div>
+    <div class="redline rv"><b>흐름</b><p>출시 때 실험 기능이던 이미지 입력이 한 달 사이 다른 회사들의 정식 입력이 되었다. 출시 때 적힌 한계가 지금도 맞는지 매번 다시 확인해야 하는 이유다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 결정 모델 계열</span><span>원조 논쟁</span></div>
+      <h2>원조 논쟁은 아이디어를 먼저 낸 것과 범용 제품으로 만든 것의 차이를 보여 준다</h2>
+    </div>
+    <div class="box3">
+      <div class="panel rv"><h3>주장</h3><ul class="sq"><li>ConvAI Innovations 창업자 Nandakishor Mukkunnoth</li><li>'1년 전에 Jev 구조를 설계했다'는 주장 (Tom's Hardware 인용)</li><li>근거: SalesRLAgent (arXiv 2503.23303, 2025. 03), 신뢰도 기반 라우팅 논문 (arXiv 2510.01237, 2025. 09)</li></ul></div>
+      <div class="panel thick rv"><h3>차이</h3><ul class="sq"><li>그의 연구는 판매라는 특정 업종의 확률 추정과 라우팅</li><li>Jev는 범용 결정 엔진에 API, 문서, 가격을 갖춘 제품</li><li>그는 오픈소스 Laya를 함께 공개했다</li></ul></div>
+      <div class="panel rv"><h3>현재</h3><ul class="sq"><li>논쟁은 09. 20 무렵부터 보도되었다</li><li>Tom's Hardware(10. 12)까지 TypeSafe의 응답은 보도되지 않음</li><li>기사도 누가 먼저인지 판단하지 않음</li></ul></div>
+    </div>
+    <div class="redline rv"><b>토론 거리</b><p>연구 아이디어의 기여와 제품화의 기여를 각각 어떻게 인정할지. 이 강의는 어느 쪽이 옳다고 판단하지 않는다.</p></div>
+  </section>
+
+  <!-- 05 한계와 검증 -->
+  <section class="sec" id="limits" data-name="한계와 검증">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag red">05 한계와 검증</span><span>그림 6 · 보정</span></div>
+      <h2>확률이 보정되어 있다는 주장은 독립 시험에서 과신으로 나타났다</h2>
+    </div>
+    <div class="split">
+      <div class="panel thick rv">
+        <div class="cal">
+          <div class="g"><h5>최상위 확신 구간 · 5,559개 (전체의 약 63%)</h5>
+            <div class="mbar"><span style="text-align:left">말한 확신도</span><div class="t"><i style="width:99.4%"></i></div><span>99.4%</span></div>
+            <div class="mbar r"><span style="text-align:left">실제 정확도</span><div class="t"><i style="width:90.2%"></i></div><span>90.2%</span></div></div>
+          <div class="g"><h5>Choice 답 전체</h5>
+            <div class="mbar"><span style="text-align:left">말한 확신도</span><div class="t"><i style="width:91.4%"></i></div><span>91.4%</span></div>
+            <div class="mbar r"><span style="text-align:left">실제 정확도</span><div class="t"><i style="width:76.1%"></i></div><span>76.1%</span></div></div>
+        </div>
+      </div>
+      <div class="mini rv" style="margin-top:0">Anthus(Ryan Porter)가 2026. 09. 19 공개한 시험이다. 직접 구성한 감성 분류 데이터 8,801개를 jev-1.13.0에 넣었고, 코드와 데이터를 공개했다. 데이터에는 라벨을 임의로 붙인 중립 예시 묶음이 들어 있다. 이 묶음을 빼면 최상위 구간의 정확도는 96.1%, Choice 전체의 차이는 약 9.1%p로 줄어든다. 확신도가 높을수록 더 잘 맞는다는 순서는 유지되었다.</div>
+    </div>
+    <div class="redline rv"><b>결론</b><p>확신도는 순위로는 쓸 만하지만, 값 그대로 '99% 맞는다'로 읽으면 안 된다. 임계값은 자기 데이터로 다시 맞춘다.</p></div>
+
+    <div class="brk"></div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag red">실습</span><strong>말한 확신도와 실제 정확도의 차이</strong><span class="hint">중립 예시 묶음을 빼 보기</span></div>
+      <div class="demo-b">
+        <div class="switch" id="calSw" style="margin-top:0"><button type="button" aria-pressed="true" data-v="all">전체 데이터 8,801개</button><button type="button" aria-pressed="false" data-v="ex">중립 예시 묶음 제외</button></div>
+        <div class="lp" style="margin-top:20px">
+          <div class="cal">
+            <div class="g"><h5>최상위 확신 구간</h5>
+              <div class="mbar"><span style="text-align:left">말한 확신도</span><div class="t"><i style="width:99.4%"></i></div><span>99.4%</span></div>
+              <div class="mbar r"><span style="text-align:left">실제 정확도</span><div class="t"><i id="calTop"></i></div><span id="calTopV"></span></div></div>
+            <div class="g"><h5>Choice 답 전체 · 말한 값과 실제 값의 차이</h5>
+              <div class="mbar r"><span style="text-align:left">차이</span><div class="t"><i id="calGap"></i></div><span id="calGapV"></span></div></div>
+          </div>
+          <div><div class="kicker">최상위 구간의 과신 폭</div><div class="big" id="calOver"></div>
+            <p class="cap" id="calSay"></p>
+</div>
+        </div>
+      </div>
+      <div class="demo-f">수치는 Anthus 독립 시험(jev-1.13.0)이다. '중립 예시 묶음 제외'에서 Choice 전체는 원문이 차이(약 9.1%p)만 밝혀 차이로 표시했다.</div>
+    </div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag red">05 한계와 검증</span><span>벤치마크 읽기</span></div>
+      <h2>벤치마크 수치는 같은 잣대로 잰 값이 아니다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl sm">
+      <thead><tr><th>지표</th><th>Jev 값</th><th>잰 곳</th><th>읽을 때 주의</th></tr></thead>
+      <tbody>
+        <tr><td>ClaimBench</td><td>1.13.0: 97.65% (주장 1,960개)</td><td>Vals AI</td><td>10. 20 무렵 14개 중 8위, 10. 23 갱신판(20개)에서는 10위. 1.14는 98.06%로 8위</td></tr>
+        <tr><td>Decision Index</td><td>0.3판 60.1 (1.13.0)</td><td>Hugging Face 커뮤니티 Space</td><td>0.2.1판은 57.9, 0.4판은 10. 19 공개. 판마다 점수의 의미가 다르다</td></tr>
+        <tr><td>Banking77</td><td>0.870 (Laya 0.425)</td><td>ConvAI의 Laya 모델 카드</td><td>라벨 72개와 77개로 조건이 다르다. 경쟁 회사가 낸 비교다</td></tr>
+        <tr><td>Kev-4B 비교</td><td>정확도 차이는 잡음 범위, 보정 오차는 Jev가 작음</td><td>Opper (362문항)</td><td>정확도와 보정은 따로 본다</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>원칙</b><p>회사 자체 평가, 경쟁사의 비교, 제3자 벤치마크, 독립 시험을 구분해 적는다. 강의 자료에는 '누가 쟀는지'를 수치와 같은 줄에 둔다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag red">05 한계와 검증</span><span>한국어</span></div>
+      <h2>한국어 입력에서는 성능을 따로 재야 한다</h2>
+    </div>
+    <div class="box3">
+      <div class="panel rv"><h3>회사가 밝힌 것</h3><ul class="sq"><li>영어에서 가장 정확하다</li><li>한중일 언어를 포함한 다른 언어는 처리하지만 같은 수준은 아니다</li><li>1.14의 개선은 다국어에 집중된다고 밝혔다</li></ul></div>
+      <div class="panel thick rv"><h3>그래서 할 일</h3><ul class="sq"><li>실제 한국어 입력 20~50개에 라벨</li><li>한국어용 확신도 하한을 따로 정함</li><li>상위 모델로 넘기는 비율을 언어별로 기록</li></ul></div>
+      <div class="panel rv"><h3>참고할 데이터</h3><ul class="sq"><li>MASSIVE: 51개 언어, 약 100만 발화의 의도·슬롯 데이터 (arXiv 2204.08582)</li><li>한국어 부분으로 의도 분류를 먼저 확인</li></ul></div>
+    </div>
+    <div class="redline rv"><b>대안</b><p>Laya처럼 다국어 인코더(mmBERT)를 쓴 오픈 모델도 있다. 언어 성능이 핵심인 과제에서는 후보를 같은 한국어 라벨 세트로 비교한다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag red">05 한계와 검증</span><span>보안</span></div>
+      <h2>판단을 분류기 하나에 맡기면 그 분류기가 단일 실패 지점이 된다</h2>
+    </div>
+    <div class="grid g2" style="margin-top:22px">
+      <div class="panel rv"><h3>위험</h3><ul class="sq"><li>적대적 입력은 분류기를 속이도록 만들어진다</li><li>루브릭 예시와 다른 입력에서는 보정이 나빠질 수 있다</li><li>라벨 뒤집힘 민감도와 적대적 강건성이 평가 과제로 지적됨</li></ul></div>
+      <div class="panel thick rv"><h3>대응</h3><ul class="sq"><li>적대적 입력에는 2차 검사를 둔다</li><li>권한·샌드박스·사람 승인은 그대로 유지한다</li><li>실패하거나 애매하면 차단·묻기 쪽으로 기본값을 둔다</li></ul></div>
+    </div>
+    <div class="mini rv">1주차 연결: 적응형 공격은 최근 방어 12개 대부분에서 90%를 넘는 성공률을 얻었다(The Attacker Moves Second, arXiv 2510.09023). 결정 모델 기반 가드도 같은 시험 대상이다.</div>
+    <div class="redline rv"><b>원칙</b><p>결정 모델은 방어의 여러 층 가운데 하나다. 1주차 결론처럼 억제는 권한·격리·정보 흐름 설계에 남겨 둔다.</p></div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag red">05 한계와 검증</span><span>쓰지 말아야 할 때</span></div>
+      <h2>결정 모델을 쓰지 말아야 하는 경우가 분명히 있다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl">
+      <thead><tr><th>경우</th><th>이유</th><th>대신 쓸 것</th></tr></thead>
+      <tbody>
+        <tr><td>산술, 날짜, 정규식 같은 매칭</td><td>확률로 판단할 문제가 아니다</td><td>결정적 코드</td></tr>
+        <tr><td>열린 생성과 설명</td><td>글을 쓰지도 이유를 말하지도 못한다</td><td>LLM</td></tr>
+        <tr><td>선택지를 미리 정할 수 없는 판단</td><td>목록에 없는 답은 고르지 못한다</td><td>LLM, 또는 unknown을 넣은 루브릭 + 상위 이관</td></tr>
+        <tr><td>32k 토큰을 넘는 상태</td><td>컨텍스트 한계</td><td>요약하거나 나눠서 판단</td></tr>
+        <tr><td>한 번뿐인 사람의 결정</td><td>루브릭과 라벨을 만드는 비용이 더 크다</td><td>사람</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>정리</b><p>반복되고, 선택지가 닫혀 있고, 틀렸을 때 위로 넘길 길이 있는 판단에 결정 모델을 쓴다.</p></div>
+  </section>
+
+  <!-- 06 다음 흐름 -->
+  <section class="sec" id="next" data-name="다음 흐름">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">06 다음 흐름</span><span>10월의 다른 흐름</span></div>
+      <h2>결정 모델 밖에서도 10월에 눈여겨볼 흐름이 있었다</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl">
+      <thead><tr><th>기술</th><th>날짜</th><th>회사가 밝힌 새로운 점</th><th>공개 상태</th></tr></thead>
+      <tbody>
+        <tr><td>Claude Duet (Anthropic)</td><td>10. 21</td><td>자체 가상 머신에서 스스로 일하는 능동형 에이전트. Opus 5.5 기반</td><td>미국 Pro·Max·Ultra 대상 연구 프리뷰</td></tr>
+        <tr><td>GPT-6.1 Terra (OpenAI)</td><td>10. 26</td><td>시각 추론, 정밀한 컴퓨터 사용, 자연스러운 글쓰기용 모델</td><td>API 변경 기록에 등재</td></tr>
+        <tr><td>Genie 4 (Google DeepMind)</td><td>10. 27</td><td>오디오를 직접 생성하는 첫 실시간 월드 모델</td><td>신뢰 테스터 대상 연구 프리뷰</td></tr>
+        <tr><td>Mercury 3 (Inception)</td><td>10. 19</td><td>토큰을 순서대로 하나씩 만들지 않는 확산 언어 모델. 1M 컨텍스트, 초당 1,068토큰</td><td>공개</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>강의자 판단</b><p>결정 모델처럼 새 범주를 연 것은 아직 보이지 않는다. 대부분 기존 흐름을 한 단계 밀어낸 것에 가깝고, 공개 범위도 프리뷰에 머문다.</p></div>
+  </section>
+
+  <!-- 07 결론 -->
+  <section class="sec concl" id="conclusion" data-name="결론">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">결론</span><span>2주차 정리</span></div>
+      <h2>판단을 생성에서 떼어 내면 에이전트 설계의 단위가 바뀐다</h2>
+    </div>
+    <div class="grid g3">
+      <div class="panel rv"><span class="n">1</span><h3>분업</h3><p style="margin:0">LLM은 쓰고, 결정 모델은 판단하고, 코드는 행동한다. 큰 모델은 처음 보는 경우를 풀어 기준을 넓히는 데만 쓴다.</p></div>
+      <div class="panel rv"><span class="n">2</span><h3>확률은 신호</h3><p style="margin:0">확신도는 순위로 쓰고 값은 믿지 않는다. 임계값은 자기 데이터, 특히 한국어 라벨로 다시 맞춘다.</p></div>
+      <div class="panel rv"><span class="n">3</span><h3>하네스가 먼저</h3><p style="margin:0">결정 모델은 권한, 결정적 검사, 사람 승인을 대체하지 않는다. 1주차 결론대로 억제는 시스템 설계에 둔다.</p></div>
+    </div>
+    <div class="preview rv"><b>3주차 예고</b><p>이 원칙을 실제 업무 자동화에 적용한 사례를 다룬다 (예정).</p></div>
+  </section>
+
+  <!-- 08 참고문헌 -->
+  <section class="sec" id="refs" data-name="참고문헌">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">참고문헌</span><span>1 / 2 · 1차 = 회사 발표·공식 문서·저자 본인의 글과 측정, 2차 = 기사·해설·집계</span></div>
+    </div>
+    <div class="refs rv">
+      <h4>Jev와 TypeSafe</h4><ul>
+        <li>TypeSafe AI. Introducing System One models and Jev. 2026. 09. 15 <a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>TypeSafe AI. Jev API 문서 (models, api) <a href="https://docs.typesafe.ai/api" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>TypeSafe AI. Jev 1.14. 2026. 10. 14 <a href="https://typesafe.ai/blog/jev-1-14" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>TypeSafe AI. 시리즈 A 투자 발표. 2026. 10. 09 <a href="https://typesafe.ai/blog/series-ai" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>DCVC. TypeSafe emerges from stealth with a new way of doing AI. 2026. 09. 15 <a href="https://www.dcvc.com/news-insights/typesafe-emerges-from-stealth-with-a-new-way-of-doing-ai" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Vercel. AI Gateway Production Index, October 2026. 2026. 10. 15 <a href="https://vercel.com/blog/ai-gateway-production-index-october-2026" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>TechCrunch. Jev is Vercel's fastest-adopted AI model ever. 2026. 10. 16 <a href="https://techcrunch.com/2026/10/16/jev-is-vercels-fastest-adopted-ai-model-ever/" target="_blank" rel="noopener">링크</a> <span class="k">2차</span></li>
+        <li>Ouyang, L. 외. Training language models to follow instructions with human feedback. arXiv 2203.02155, 2022 <a href="https://arxiv.org/abs/2203.02155" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li></ul>
+      <h4>Jev 엔지니어링과 하네스</h4><ul>
+        <li>AI Jason (AI Builder Club). Jev Engineering: LLM Writes, Jev Decides, Code Acts. 2026. 09. 22 <a href="https://www.aibuilderclub.com/blog/jev-engineering-guide" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Runkle, S., Lovell, H. Building a harness with Jev. LangChain Blog, 2026. 09. 17 <a href="https://www.langchain.com/blog/building-a-harness-with-jev" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Daily Dose of Data Science. Building a production agent harness. 2026. 10. 01 <a href="https://blog.dailydoseofds.com/p/building-a-production-agent-harness" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Faros AI. Harness engineering: What makes AI coding agents work in 2026 <a href="https://www.faros.ai/blog/harness-engineering" target="_blank" rel="noopener">링크</a> <span class="k">2차</span></li>
+        <li>Kahneman, D. Thinking, Fast and Slow. Farrar, Straus and Giroux, 2011 <span class="k">1차</span></li></ul>
+      <h4>한계와 평가</h4><ul>
+        <li>Porter, R. (Anthus AI). Can you trust Jev's confidence? 2026. 09. 19 <a href="https://anth.us/blog/can-you-trust-jev-confidence/" target="_blank" rel="noopener">링크</a> · <a href="https://github.com/AnthusAI/Jev-Calibration" target="_blank" rel="noopener">코드와 데이터</a> <span class="k">1차</span></li>
+        <li>Vals AI. ClaimBench 리더보드 (2026. 10. 23 갱신판) <a href="https://www.vals.ai/benchmarks/claimbench" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>multimodalart. Decision Index (Hugging Face 커뮤니티 Space) <a href="https://huggingface.co/spaces/multimodalart/jev-decision-index" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>FitzGerald, J. 외. MASSIVE. arXiv 2204.08582, 2022 <a href="https://arxiv.org/abs/2204.08582" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Nasr, M. 외. The Attacker Moves Second. arXiv 2510.09023, 2025 <a href="https://arxiv.org/abs/2510.09023" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li></ul>
+      <h4>10월의 다른 흐름</h4><ul>
+        <li>Anthropic. Claude Duet. 2026. 10. 21 <a href="https://claude.com/resources/articles/claude-duet" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Google DeepMind. Genie 4: a new generation of world simulation. 2026. 10. 27 <a href="https://deepmind.google/blog/genie-4-a-new-generation-of-world-simulation/" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Inception. Introducing Mercury 3. 2026. 10. 19 <a href="https://www.inceptionlabs.ai/blog/introducing-mercury-3" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li></ul>
+      <h4>1주차</h4><ul>
+        <li>XREAL CV · AI Agent Community 1주차. LLM의 역사와 작동 원리, 그리고 레드티밍 v0.4. 2026. 10. 25 <a href="../week1/">링크</a> <span class="k">1차</span></li></ul>
+    </div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">참고문헌</span><span>2 / 2 · 결정 모델 계열</span></div>
+    </div>
+    <div class="refs rv">
+      <ul>
+        <li>OpenAI. API 변경 기록과 Decisions 가이드 (2026. 10. 06 베타, 10. 22 정식 출시, 10. 26 GPT-6.1 Terra) <a href="https://developers.openai.com/api/docs/changelog" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Srivastava, A. Microsoft-Decision-1 in Microsoft Foundry. 2026. 10. 09 <a href="https://commandline.microsoft.com/microsoft-decision-1-model-foundry/" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Cloudflare. Clef와 Clef-flash, Workers AI 변경 기록. 2026. 10. 01 <a href="https://developers.cloudflare.com/changelog/post/2026-10-01-clef-workers-ai/" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Cloudflare. Clef: faster, cheaper, multimodal. 2026. 10. 09 <a href="https://blog.cloudflare.com/clef-faster-cheaper-multimodal/" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Liquid AI. Open d1. 2026. 10. 07 · d1-ultra. 2026. 10. 15 <a href="https://www.liquid.ai/blog/open-d1" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Perplexity. pplx-decider-v1-27b 모델 카드 <a href="https://huggingface.co/perplexity-ai/pplx-decider-v1-27b" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>LLM Reference. 결정 모델 출시일 집계 <a href="https://www.llmreference.com/model/jev" target="_blank" rel="noopener">링크</a> <span class="k">2차</span></li>
+        <li>Superagent. Introducing Security-One. 2026. 10. 04 <a href="https://www.superagent.sh/blog/introducing-security-one" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>ggml-org. Decision models in llama.cpp. 2026. 10. 02 <a href="https://huggingface.co/blog/ggml-org/decision-models-in-llamacpp" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>vLLM. Structured decisions endpoint (/v1/systemone), PR #59299, 2026. 10. 08 <a href="https://github.com/vllm-project/vllm/pull/59299" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>ConvAI Innovations. Laya 모델 카드 <a href="https://huggingface.co/convaiinnovations/laya" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Opper AI. Jev vs Kev: an open decision model. 2026. 09. 25 <a href="https://opper.ai/blog/jev-vs-kev-open-decision-model" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>andyrewlee. awesome-system-one (GitHub 목록) <a href="https://github.com/andyrewlee/awesome-system-one" target="_blank" rel="noopener">링크</a> <span class="k">2차</span></li>
+        <li>Waehner, K. How Decision Models Became a New AI Category After Jev. 2026. 10. 20 <a href="https://www.kai-waehner.de/blog/2026/10/20/how-decision-models-became-a-new-ai-category-after-jev/" target="_blank" rel="noopener">링크</a> <span class="k">2차</span></li>
+        <li>Ferreira, B. Jev-like decision models are flooding the AI market. Tom's Hardware, 2026. 10. 12 <a href="https://www.tomshardware.com/tech-industry/artificial-intelligence/jev-like-decision-models-are-flooding-the-ai-market-after-researcher-claims-typesafe-copied-their-research-microsoft-openai-among-companies-releasing-lightweight-system-one-ai-models" target="_blank" rel="noopener">링크</a> <span class="k">2차</span></li>
+        <li>Mukkunnoth, N. SalesRLAgent. arXiv 2503.23303, 2025. 03. 30 <a href="https://arxiv.org/abs/2503.23303" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+        <li>Mukkunnoth, N. Confidence-Aware Routing for LLM Reliability Enhancement. arXiv 2510.01237, 2025. 09. 23 <a href="https://arxiv.org/abs/2510.01237" target="_blank" rel="noopener">링크</a> <span class="k">1차</span></li>
+      </ul>
+    </div>
+    <div class="btns rv">
+      <a class="btn primary" href="../">코스 홈으로</a>
+      <a class="btn" href="../week1/">1주차 다시 보기</a>
+    </div>
   </section>
 </main>
-<footer class="foot"><div class="wrap"><p><strong>XREAL CV · AI Agent Community</strong> · <span class="domain">qnftk020.github.io/xreal-cv-ai-agent-community</span></p></div></footer>
+<span class="zoom-note" id="zoomNote"></span>
+
+<nav class="pager" id="pager" aria-label="페이지 넘기기">
+  <div class="wrap">
+    <button class="pg-btn" id="pgPrev" type="button"><span class="k">←</span><span class="t"><small>이전</small><b id="pgPrevName"></b></span></button>
+    <div class="pg-mid"><div class="pg-count"><b id="pgNum">01</b> / <span id="pgTot">01</span> · <span id="pgName"></span></div><div class="pg-dots" id="pgDots"></div></div>
+    <button class="pg-btn next" id="pgNext" type="button"><span class="t"><small>다음</small><b id="pgNextName"></b></span><span class="k">→</span></button>
+  </div>
+</nav>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><strong>XREAL CV · AI Agent Community</strong> · <span class="domain">qnftk020.github.io/xreal-cv-ai-agent-community</span> · WEEK 02</p>
+    <p>원본: 「2주차 강의 대본 · 결정 모델과 Jev 엔지니어링, 그리고 에이전트 하네스」 · 기준일 2026. 11. 02. 모든 그림은 개념도이며 ‘예시’로 표시한 수치는 설명용이다.</p>
+  </div>
+</footer>
+
+<script src="../assets/common.js"></script>
+<script src="../assets/scene-engine.js"></script>
+<script src="scenes.js"></script>
+<script>
+/* 애니메이션 자리: 장 id → { 그 장의 몇 번째 슬라이드(0부터) 뒤: [장표 쪽수…] } */
+window.DECK_PLACE = {
+  bg: { 0: [3], 2: [4] },
+  jev: { 0: [7], 1: [8] },
+  eng: { 0: [12], 2: [14], 4: [15], 5: [16], 9: [20] },
+  limits: { 0: [28] }
+};
+</script>
+<script src="../assets/deck.js"></script>
+<script src="week2.js"></script>
 </body>
 </html>
