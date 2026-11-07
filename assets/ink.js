@@ -16,38 +16,74 @@ const INK = (() => {
   };
 
   /* ---------- 켜고 끄기: ?pen / ?pen=off ---------- */
-  let justOn = false;
+  let justOn = false, want = false;
   const q = new URLSearchParams(location.search);
   if (q.has('pen')) {
     const v = (q.get('pen') || '').toLowerCase();
     if (v === 'off' || v === '0' || v === 'false') ls.del(ON_KEY);
-    else { justOn = ls.get(ON_KEY) !== '1'; ls.set(ON_KEY, '1'); }
+    else { want = true; justOn = ls.get(ON_KEY) !== '1'; ls.set(ON_KEY, '1'); }
     q.delete('pen');
     const qs = q.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
   }
-  if (ls.get(ON_KEY) !== '1' || typeof PAGER === 'undefined') return null;
+  /* 사이트 저장소가 막힌 브라우저에서는 ?pen으로 연 동안만 쓰고, 저장하지 않는다 */
+  const ephemeral = want && ls.get(ON_KEY) !== '1';
+  if ((ls.get(ON_KEY) !== '1' && !ephemeral) || typeof PAGER === 'undefined') return null;
 
   /* ---------- 저장 ---------- */
+  /* 저장소·백업에서 읽은 값은 모양과 범위를 검사해 깨끗한 것만 쓴다 */
+  const PX = /^\d{1,4}(\.\d+)?px$/, PAD = /^(\d{1,4}(\.\d+)?px ?){1,4}$/;
+  function sanitize(src) {
+    const out = {};
+    if (!src || typeof src !== 'object' || Array.isArray(src)) return out;
+    Object.keys(src).slice(0, 500).forEach(id => {
+      const x = src[id];
+      if (!/^[\w-]{1,60}$/.test(id) || !x || !Array.isArray(x.s)) return;
+      const s = x.s.filter(t => t && (t.k === 'p' || t.k === 'h') && Array.isArray(t.p) && t.p.length >= 2 && t.p.length <= 40000 &&
+          t.p.every(n => Number.isFinite(n) && Math.abs(n) <= 5000) && +t.w >= 0.5 && +t.w <= 80)
+        .map(t => ({ k: t.k, w: +t.w, p: t.p.slice(0, t.p.length - (t.p.length % 2)) }));
+      if (!s.length) return;
+      const r = { s }, lw = +x.lw;
+      if (lw >= 200 && lw <= 4000) {
+        r.lw = lw;
+        r.pad = typeof x.pad === 'string' && PAD.test(x.pad.trim()) ? x.pad.trim() : '';
+        if (typeof x.smw === 'string' && PX.test(x.smw)) r.smw = x.smw;
+        if (+x.h > 0 && +x.h < 20000) r.h = +x.h;
+        if (Array.isArray(x.dt)) r.dt = x.dt.filter(i => Number.isInteger(i) && i >= 0 && i < 100).slice(0, 50);
+      }
+      out[id] = r;
+    });
+    return out;
+  }
   function load() {
     try {
       const d = JSON.parse(ls.get(KEY) || 'null');
-      if (d && d.v === 1 && d.slides && typeof d.slides === 'object') return d;
+      if (d && d.v === 1) return { v: 1, slides: sanitize(d.slides) };
     } catch (e) { /* 손상된 값은 새로 시작 */ }
     return { v: 1, slides: {} };
   }
   let data = load();
-  let saveT = 0;
+  /* 여러 탭·창에서 같은 주차를 열어도 서로 덮어쓰지 않게, 이 탭이 바꾼 장만 저장소에 합쳐 쓴다 */
+  const dirty = new Set();
+  let dirtyAll = false, saveT = 0;
   function save(now) {
-    clearTimeout(saveT);
+    clearTimeout(saveT); saveT = 0;
+    if (ephemeral) { dirty.clear(); dirtyAll = false; return; }
     const run = () => {
-      const empty = Object.keys(data.slides).length === 0;
-      const ok = empty ? (ls.del(KEY), true) : ls.set(KEY, JSON.stringify(data));
+      saveT = 0;
+      if (!dirtyAll && !dirty.size) return;
+      let out = data;
+      if (!dirtyAll) {
+        out = load();
+        dirty.forEach(id => { if (data.slides[id]) out.slides[id] = data.slides[id]; else delete out.slides[id]; });
+      }
+      dirty.clear(); dirtyAll = false;
+      const ok = Object.keys(out.slides).length ? ls.set(KEY, JSON.stringify(out)) : (ls.del(KEY), true);
       if (!ok) toast('저장 공간이 부족해 필기를 저장하지 못했습니다. ⋯ 메뉴에서 백업을 내려받으세요', 5000);
     };
     if (now) run(); else saveT = setTimeout(run, 250);
   }
-  addEventListener('pagehide', () => save(true));
+  addEventListener('pagehide', () => { if (saveT) save(true); });
 
   /* ---------- 도구 상태 ---------- */
   const SIZES = { p: [2, 3.4, 5.6], h: [14, 22, 34] };
@@ -97,7 +133,8 @@ const INK = (() => {
   function render(sl) {
     const L = layer(sl), d = data.slides[sl.id];
     L.g.textContent = '';
-    if (d) d.s.forEach(s => L.g.appendChild(strokeEl(s)));
+    if (d && Array.isArray(d.s)) d.s.forEach(s => L.g.appendChild(strokeEl(s)));
+    sl.classList.toggle('has-ink', !!(d && d.s && d.s.length));
   }
 
   /* 필기가 생기면 지금의 레이아웃을 기록해 고정하고, 다 지워지면 고정을 푼다 */
@@ -109,24 +146,36 @@ const INK = (() => {
     } else { delete box.dataset.lw; delete box.dataset.pad; delete box.dataset.smw; }
   }
   /* 장의 기록 칸을 돌려준다. 없으면 meta(필기한 순간의 레이아웃)로 만들고, meta도 없으면 지금 레이아웃을 잰다 */
+  /* 지금 보이는 넓은 화면(.fit)에서만 잰다. 숨은 장(폭 0)이나 좁은 화면의 레이아웃은 기록하지 않는다 */
+  const fitMode = () => document.body.classList.contains('fit');
   function measure(sl) {
-    const box = sl.firstChild, cs = getComputedStyle(box), st = box.querySelector('.scn .stage');
-    const m = { lw: box.clientWidth, pad: [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].join(' ') };
+    const box = sl.firstChild;
+    if (!fitMode() || !box.clientWidth || !sl.classList.contains('cur')) return null;
+    const cs = getComputedStyle(box), st = box.querySelector('.scn .stage');
+    const m = { lw: box.clientWidth, pad: [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].join(' '), h: box.scrollHeight };
     if (st) m.smw = st.offsetWidth + 'px';
+    const det = [...box.querySelectorAll('details')];
+    if (det.length) m.dt = det.map((x, i) => (x.open ? i : -1)).filter(i => i >= 0);
     return m;
   }
-  const metaOf = d => (d ? { lw: d.lw, pad: d.pad, ...(d.smw ? { smw: d.smw } : {}) } : null);
+  const metaOf = d => (d && d.lw ? { lw: d.lw, pad: d.pad, ...(d.smw ? { smw: d.smw } : {}), ...(d.h ? { h: d.h } : {}), ...(d.dt ? { dt: d.dt } : {}) } : null);
+  /* 필기할 때 펼쳐 두었던 항목을 그대로 되살린다 (높이가 같아야 필기가 제자리에 온다) */
+  function restoreState(sl, d) {
+    if (!d || !Array.isArray(d.dt)) return;
+    sl.firstChild.querySelectorAll('details').forEach((x, i) => { const o = d.dt.includes(i); if (x.open !== o) x.open = o; });
+  }
   function slot(sl, meta) {
     let d = data.slides[sl.id];
     if (d && d.lw) return d;
-    d = { s: d ? d.s : [], ...(meta || measure(sl)) };
+    d = { s: d ? d.s : [], ...(meta || measure(sl) || {}) };
     data.slides[sl.id] = d;
-    pinFrom(sl, d); PAGER.refit();
+    if (d.lw) { pinFrom(sl, d); PAGER.refit(); }
     return d;
   }
   function sync(sl) {
     const d = data.slides[sl.id];
     if (d && !d.s.length) { delete data.slides[sl.id]; pinFrom(sl, null); PAGER.refit(); }
+    dirty.add(sl.id);
     render(sl); save(); ui();
   }
 
@@ -145,9 +194,9 @@ const INK = (() => {
     sync(sl);
   }
   function record(sl, op) { const st = H(sl.id); st.u.push(op); st.r.length = 0; if (st.u.length > 200) st.u.shift(); }
-  function commit(sl, op) { op.meta = op.meta || metaOf(data.slides[sl.id]); record(sl, op); apply(sl, op, false); }
-  function undo() { const sl = curSlide(), st = H(sl.id), op = st.u.pop(); if (!op) return; st.r.push(op); apply(sl, op, true); }
-  function redo() { const sl = curSlide(), st = H(sl.id), op = st.r.pop(); if (!op) return; st.u.push(op); apply(sl, op, false); }
+  function commit(sl, op) { op.meta = op.meta || metaOf(data.slides[sl.id]); record(sl, op); apply(sl, op, false); if (!op.meta) op.meta = metaOf(data.slides[sl.id]); }
+  function undo() { if (active) return; const sl = curSlide(), st = H(sl.id), op = st.u.pop(); if (!op) return; st.r.push(op); apply(sl, op, true); }
+  function redo() { if (active) return; const sl = curSlide(), st = H(sl.id), op = st.r.pop(); if (!op) return; st.u.push(op); apply(sl, op, false); }
   function clearSlide() {
     const sl = curSlide(), d = data.slides[sl.id];
     if (!d || !d.s.length) return;
@@ -184,13 +233,14 @@ const INK = (() => {
     if (e.pointerType === 'pen') penSeen = true;
     if (e.button !== 0 && e.button !== 5) return;
     const sl = curSlide(); if (!sl) return;
+    if (!fitMode()) { toast('필기는 슬라이드가 한 화면에 맞춰진 넓은 창에서만 쓸 수 있습니다 · 창을 넓혀 주세요', 3200); return; }
     e.preventDefault();
     try { main.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
     const kind = isEraserButton(e) ? 'eraser' : tool;
     if (hidden) setHidden(false);
     const L = layer(sl);
     const d0 = data.slides[sl.id];
-    active = { id: e.pointerId, sl, L, kind, del: [], el: null, before: d0 ? d0.s.slice() : [], meta: metaOf(d0) };
+    active = { id: e.pointerId, sl, L, kind, del: [], el: null, before: d0 ? d0.s.slice() : [], meta: metaOf(d0) || measure(sl) };
     const [u, v] = toU(L, e);
     if (kind === 'eraser') { eraseAt(active, u, v); return; }
     const k = kind === 'pen' ? 'p' : kind === 'hl' ? 'h' : 'l';
@@ -235,7 +285,7 @@ const INK = (() => {
       return;
     }
     a.el.remove();
-    commit(a.sl, { t: 'add', s: a.s });
+    commit(a.sl, { t: 'add', s: a.s, meta: a.meta });
   }
   main.addEventListener('pointerdown', down);
   main.addEventListener('pointermove', move);
@@ -243,7 +293,7 @@ const INK = (() => {
   main.addEventListener('pointercancel', up);
   main.addEventListener('lostpointercapture', e => { if (active && e.pointerId === active.id) finish(); });
   /* 그리는 중에는 슬라이드의 버튼·링크가 눌리지 않게 막는다 */
-  main.addEventListener('click', e => { if (tool !== 'hand') { e.stopPropagation(); e.preventDefault(); } }, true);
+  main.addEventListener('click', e => { if (tool !== 'hand' && fitMode()) { e.stopPropagation(); e.preventDefault(); } }, true);
 
   /* 지우개·레이저 위치 표시 */
   const cur = h('div', 'ink-cursor'); document.body.appendChild(cur);
@@ -273,7 +323,7 @@ const INK = (() => {
   const bar = h('div', 'inkbar');
   bar.id = 'inkbar'; bar.setAttribute('role', 'toolbar'); bar.setAttribute('aria-label', '필기 도구');
   bar.innerHTML = `
-    <button type="button" class="ink-fold" data-a="fold" title="도구 막대 접기 · 펴기" aria-label="도구 막대 접기">${ico('fold')}</button>
+    <button type="button" class="ink-fold" data-a="fold" title="도구 막대 접기 · 펴기" aria-label="도구 막대 접기" aria-expanded="true">${ico('fold')}</button>
     <button type="button" data-t="pen" title="빨간 펜 (P)" aria-label="빨간 펜">${ico('pen')}</button>
     <div class="ink-sizes" role="group" aria-label="굵기">
       <button type="button" data-s="0" title="가늘게 (1)" aria-label="가늘게"><i style="width:4px;height:4px"></i></button>
@@ -290,8 +340,8 @@ const INK = (() => {
     <button type="button" data-a="clear" title="이 장의 필기 지우기" aria-label="이 장의 필기 지우기">${ico('clear')}</button>
     <button type="button" data-a="eye" title="필기 숨기기 · 보이기 (V)" aria-label="필기 숨기기">${ico('eye')}</button>
     <hr>
-    <button type="button" data-a="pdf" title="PDF로 내보내기" aria-label="PDF로 내보내기">${ico('pdf')}</button>
-    <button type="button" data-a="more" title="백업 · 설정" aria-label="백업과 설정">${ico('more')}</button>
+    <button type="button" data-a="pdf" title="PDF로 내보내기" aria-label="PDF로 내보내기" aria-haspopup="dialog" aria-expanded="false">${ico('pdf')}</button>
+    <button type="button" data-a="more" title="백업 · 설정" aria-label="백업과 설정" aria-haspopup="dialog" aria-expanded="false">${ico('more')}</button>
     <span class="ink-count" aria-live="polite"></span>`;
   document.body.appendChild(bar);
 
@@ -344,13 +394,18 @@ const INK = (() => {
     const eye = bar.querySelector('[data-a=eye]'); eye.setAttribute('aria-pressed', hidden ? 'true' : 'false'); eye.title = hidden ? '필기 보이기 (V)' : '필기 숨기기 (V)';
     bar.querySelector('.ink-count').textContent = n ? n + '획' : '';
   }
+  function closePops() {
+    [pdfPop, morePop].forEach(x => { x.hidden = true; });
+    bar.querySelectorAll('[aria-haspopup]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  }
   function pop(p, btn) {
     const open = p.hidden;
-    [pdfPop, morePop].forEach(x => { x.hidden = true; });
+    closePops();
     if (!open) return;
-    p.hidden = false;
+    p.hidden = false; btn.setAttribute('aria-expanded', 'true');
     const r = btn.getBoundingClientRect(), br = bar.getBoundingClientRect();
     const narrow = innerWidth < 760;
+    p.style.maxHeight = (narrow ? Math.max(160, br.top - 20) : innerHeight - 24) + 'px';
     p.style.right = narrow ? '14px' : (innerWidth - br.left + 10) + 'px';
     p.style.top = narrow ? '' : Math.max(12, Math.min(innerHeight - p.offsetHeight - 12, r.top - 20)) + 'px';
     p.style.bottom = narrow ? (innerHeight - br.top + 10) + 'px' : '';
@@ -363,7 +418,7 @@ const INK = (() => {
     const o = pdfOpts();
     if (DECK_PRINT.count(o) === 0) { toast('내보낼 장이 없습니다 · 필기한 장만을 끄거나 필기를 남겨 주세요'); return; }
     Object.assign(DECK_PRINT.opts, o);
-    pdfPop.hidden = true;
+    closePops();
     if (o.ink && hidden) setHidden(false);
     setTimeout(() => window.print(), 50);
   });
@@ -378,35 +433,36 @@ const INK = (() => {
     const b = e.target.closest('[data-m]'); if (!b) return;
     const m = b.dataset.m;
     if (m === 'export') {
-      const wk = location.pathname.split('/').filter(Boolean).pop() || 'deck';
-      download(`ink-${wk}.json`, JSON.stringify({ app: 'xreal-ink', path: location.pathname, ...data }, null, 0));
+      const wk = PATH.split('/').filter(Boolean).pop() || 'deck';
+      download(`ink-${wk}.json`, JSON.stringify({ app: 'xreal-ink', path: PATH, ...data }, null, 0));
     } else if (m === 'import') moreFile.click();
     else if (m === 'wipe') {
       if (!confirm('이 주차의 필기를 모두 지울까요? 되돌릴 수 없습니다. 필요하면 먼저 백업을 내려받으세요.')) return;
-      data = { v: 1, slides: {} }; hist.clear();
-      slides.forEach(sl => { pinFrom(sl, null); render(sl); });
-      save(true); PAGER.refit(); ui(); morePop.hidden = true; toast('이 주차의 필기를 모두 지웠습니다');
+      replaceAll({});
+      closePops(); toast('이 주차의 필기를 모두 지웠습니다');
     } else if (m === 'off') {
-      save(true); ls.del(ON_KEY); location.reload();
+      if (saveT) save(true); ls.del(ON_KEY); location.reload();
     }
   });
+  const PATH = location.pathname.replace(/index\.html$/, '');
+  function replaceAll(slidesObj) {
+    data = { v: 1, slides: slidesObj }; hist.clear(); dirtyAll = true;
+    slides.forEach(sl => { const d = data.slides[sl.id]; restoreState(sl, d); pinFrom(sl, d); render(sl); });
+    save(true); PAGER.refit(); ui();
+  }
   moreFile.addEventListener('change', () => {
     const f = moreFile.files && moreFile.files[0]; if (!f) return;
     f.text().then(txt => {
       const d = JSON.parse(txt);
       if (!d || d.v !== 1 || !d.slides || typeof d.slides !== 'object') throw new Error('형식');
-      const clean = {};
-      Object.keys(d.slides).forEach(id => {
-        const x = d.slides[id];
-        if (!x || !Array.isArray(x.s)) return;
-        const s = x.s.filter(t => t && (t.k === 'p' || t.k === 'h') && Array.isArray(t.p) && t.p.length >= 2 && t.p.every(Number.isFinite) && Number.isFinite(+t.w))
-          .map(t => ({ k: t.k, w: +t.w, p: t.p.slice(0, t.p.length - (t.p.length % 2)) }));
-        if (s.length && +x.lw > 0) clean[id] = { s, lw: +x.lw, pad: typeof x.pad === 'string' ? x.pad.slice(0, 80) : '', ...(typeof x.smw === 'string' ? { smw: x.smw.slice(0, 20) } : {}) };
-      });
-      data = { v: 1, slides: clean }; hist.clear();
-      slides.forEach(sl => { pinFrom(sl, data.slides[sl.id]); render(sl); });
-      save(true); PAGER.refit(); ui(); morePop.hidden = true;
-      toast(`백업을 불러왔습니다 · ${Object.keys(clean).length}장`);
+      const clean = sanitize(d.slides), n = Object.keys(clean).length;
+      if (!n) { toast('백업에 불러올 필기가 없습니다 · 지금 필기는 그대로입니다', 3200); return; }
+      const from = typeof d.path === 'string' ? d.path.replace(/index\.html$/, '') : '';
+      if (from && from !== PATH && !confirm(`다른 주차(${from})의 백업입니다. 이 주차(${PATH})에 그래도 불러올까요?`)) return;
+      const have = Object.keys(data.slides).length;
+      if (have && !confirm(`지금 이 주차의 필기 ${have}장을 백업의 ${n}장으로 바꿉니다. 지금 필기는 사라집니다. 계속할까요?`)) return;
+      replaceAll(clean); closePops();
+      toast(`백업을 불러왔습니다 · ${n}장`);
     }).catch(() => toast('백업 파일을 읽지 못했습니다'));
     moreFile.value = '';
   });
@@ -421,39 +477,80 @@ const INK = (() => {
     else if (b.dataset.a === 'eye') setHidden(!hidden);
     else if (b.dataset.a === 'pdf') pop(pdfPop, b);
     else if (b.dataset.a === 'more') pop(morePop, b);
-    else if (b.dataset.a === 'fold') { bar.classList.toggle('ink-min'); if (bar.classList.contains('ink-min')) setTool('hand'); }
+    else if (b.dataset.a === 'fold') {
+      const min = bar.classList.toggle('ink-min');
+      b.setAttribute('aria-expanded', min ? 'false' : 'true'); b.setAttribute('aria-label', min ? '도구 막대 펴기' : '도구 막대 접기');
+      if (min) { setTool('hand'); closePops(); }
+    }
   });
+  /* 마우스·펜으로 누른 도구 버튼이 포커스를 갖지 않게 한다 (스페이스로 다음 장을 넘길 때 버튼이 다시 눌리지 않게) */
+  [bar, pdfPop, morePop].forEach(x => x.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault(); }));
   document.addEventListener('pointerdown', e => {
     if (e.target.closest('.ink-pop, #inkbar')) return;
-    pdfPop.hidden = true; morePop.hidden = true;
+    closePops();
   });
 
   /* ---------- 단축키 ---------- */
   document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && (!pdfPop.hidden || !morePop.hidden)) {
+      const b = bar.querySelector(!pdfPop.hidden ? '[data-a=pdf]' : '[data-a=more]');
+      closePops(); e.preventDefault(); if (e.target.closest('.ink-pop')) b.focus(); return;
+    }
     if (e.target.closest('input,textarea,select,[contenteditable]')) return;
-    const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+    /* 한글 입력 상태에서도 P·E 같은 단축키가 듣도록 글쇠 위치(e.code)로도 읽는다 */
+    const key = e.key || '', code = e.code || '';
+    const k = /^[a-z0-9]$/i.test(key) ? key.toLowerCase()
+      : /^Key[A-Z]$/.test(code) ? code.slice(3).toLowerCase()
+      : /^Digit[0-9]$/.test(code) ? code.slice(5) : key.toLowerCase();
+    const mod = e.ctrlKey || e.metaKey;
     if (mod && k === 'z') { e.preventDefault(); if (e.shiftKey) redo(); else undo(); return; }
     if (mod && k === 'y') { e.preventDefault(); redo(); return; }
     if (mod || e.altKey) return;
-    if (k === 'escape') { if (!pdfPop.hidden || !morePop.hidden) { pdfPop.hidden = morePop.hidden = true; return; } setTool('hand'); return; }
+    if (k === 'escape') { setTool('hand'); return; }
     const map = { p: 'pen', h: 'hl', l: 'laser', e: 'eraser' };
-    if (map[k]) { e.preventDefault(); bar.classList.remove('ink-min'); setTool(tool === map[k] ? 'hand' : map[k]); return; }
+    if (map[k]) { e.preventDefault(); if (bar.classList.contains('ink-min')) bar.querySelector('[data-a=fold]').click(); setTool(tool === map[k] ? 'hand' : map[k]); return; }
     if (k === 'v') { e.preventDefault(); setHidden(!hidden); return; }
     if (k === '1' || k === '2' || k === '3') { size = +k - 1; if (tool !== 'pen' && tool !== 'hl') setTool('pen'); ui(); }
   });
 
   /* ---------- 슬라이드 엔진과 맞추기 ---------- */
+  const warned = new Set();
+  let flowWarned = false;
   document.addEventListener('deck:slide', () => { finish(); ui(); });
-  document.addEventListener('deck:fit', e => { const L = layers.get(e.detail.slide.id); if (L) rescale(L); });
+  document.addEventListener('deck:fit', e => {
+    const sl = e.detail.slide, L = layers.get(sl.id), d = data.slides[sl.id];
+    if (L) rescale(L);
+    if (!d || !d.s.length || sl !== curSlide()) return;
+    if (!fitMode()) {
+      if (!flowWarned) { flowWarned = true; toast('이 창에서는 필기가 숨겨집니다 · 창을 넓히면 다시 보입니다', 3200); }
+      return;
+    }
+    flowWarned = false;
+    if (!d.lw) { slot(sl, null); return; }                         /* 레이아웃 기록이 없던 옛 필기는 지금 보이는 대로 고정 */
+    if (d.h && Math.abs(sl.firstChild.scrollHeight - d.h) > 4) {
+      if (!warned.has(sl.id)) { warned.add(sl.id); toast('필기한 뒤 이 장의 내용 높이가 바뀌었습니다 · 데모·펼친 항목을 필기할 때와 같게 두면 필기가 제자리에 옵니다', 4500); }
+    } else warned.delete(sl.id);
+  });
+  document.addEventListener('deck:printprepare', () => slides.forEach(sl => restoreState(sl, data.slides[sl.id])));
   document.addEventListener('deck:printlayout', () => layers.forEach(rescale));
+  /* 다른 탭·창에서 같은 주차의 필기를 바꾸면 받아 온다 (이 탭에서 아직 저장 안 한 장은 지킨다) */
+  addEventListener('storage', e => {
+    if (e.key !== KEY || active) return;
+    const fresh = load();
+    dirty.forEach(id => { if (data.slides[id]) fresh.slides[id] = data.slides[id]; else delete fresh.slides[id]; });
+    data = fresh; hist.clear();
+    slides.forEach(sl => { const d = data.slides[sl.id]; pinFrom(sl, d); if (d || layers.has(sl.id)) render(sl); });
+    PAGER.refit(); ui();
+  });
 
   document.body.classList.add('ink-on');
   PAGER.layout();
   /* 저장된 필기 그리기 */
-  slides.forEach(sl => { const d = data.slides[sl.id]; if (d && d.s && d.s.length) { pinFrom(sl, d); render(sl); } });
+  slides.forEach(sl => { const d = data.slides[sl.id]; if (d && d.s && d.s.length) { restoreState(sl, d); pinFrom(sl, d); render(sl); } });
   PAGER.refit();
   setTool('hand');
-  if (justOn) toast('필기 모드를 켰습니다 · P 펜, E 지우개, Esc 멈춤 · 필기는 이 브라우저에만 저장됩니다', 4200);
+  if (ephemeral) toast('이 브라우저는 사이트 저장소가 막혀 있어 필기가 저장되지 않습니다 · 닫기 전에 PDF로 내보내세요', 6000);
+  else if (justOn) toast('필기 모드를 켰습니다 · P 펜, E 지우개, Esc 멈춤 · 필기는 이 브라우저에만 저장됩니다', 4200);
 
   return {
     get tool() { return tool; }, setTool, undo, redo, clearSlide,

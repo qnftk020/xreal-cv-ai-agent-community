@@ -296,7 +296,7 @@ body.fit{overflow:hidden;height:100vh;height:100dvh;padding-bottom:0}
 body.print-prep{border-top:0!important;margin:0!important;padding:0!important;overflow:visible!important;height:auto!important;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 body.print-prep .topbar,body.print-prep .pager,body.print-prep .foot,body.print-prep .zoom-note,body.print-prep .readbar{display:none!important}
 body.print-prep main{position:static!important;inset:auto!important;max-width:none!important;width:1280px!important;padding:0!important;margin:0!important;overflow:visible!important}
-body.print-prep .slide{display:flex!important;flex-direction:column;justify-content:center;align-items:center;position:relative;width:1280px;height:720px;padding:36px 44px 56px!important;margin:0;overflow:hidden;box-sizing:border-box;break-after:page;page-break-after:always;animation:none!important;background:#fff}
+body.print-prep .slide{display:flex!important;flex-direction:column;justify-content:center;align-items:center;position:relative;width:1280px!important;height:720px!important;padding:36px 44px 56px!important;margin:0;overflow:hidden;box-sizing:border-box;break-after:page;page-break-after:always;animation:none!important;background:#fff}
 body.print-prep .slide.pp-last{break-after:auto;page-break-after:auto}
 body.print-prep .slide.pp-skip{display:none!important}
 body.print-prep .slide > .fitbox{flex:none;margin:0!important;height:auto}

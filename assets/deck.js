@@ -179,7 +179,7 @@ const PAGER = (() => {
     fq = requestAnimationFrame(() => {
       const sl = slides[cur]; if (!sl) return;
       const box = sl.firstChild;
-      box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = '';
+      box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = ''; box.style.padding = '';
       const stage = box.querySelector('.scn .stage'); if (stage) stage.style.maxWidth = '';
       const done = z => { $('zoomNote').textContent = '화면 맞춤 ' + Math.round(z * 100) + '%'; $('zoomNote').classList.toggle('on', z < 0.999); document.dispatchEvent(new CustomEvent('deck:fit', { detail: { slide: sl, box } })); };
       if (!document.body.classList.contains('fit')) { $('zoomNote').classList.remove('on'); document.dispatchEvent(new CustomEvent('deck:fit', { detail: { slide: sl, box } })); return; }
@@ -187,13 +187,15 @@ const PAGER = (() => {
       /* 필기가 있는 장은 필기한 순간의 레이아웃 폭을 그대로 쓰고 배율만 바꾼다. 줄바꿈이 같아야 필기가 제자리에 남는다 */
       const lw = +box.dataset.lw || 0;
       if (lw) {
-        box.style.width = lw + 'px'; box.style.maxWidth = 'none';
+        box.style.width = lw + 'px'; box.style.maxWidth = 'none'; box.style.padding = box.dataset.pad || '';
         if (stage && box.dataset.smw) stage.style.maxWidth = box.dataset.smw;
         const z = Math.min(1, main.clientWidth / lw, avail / box.scrollHeight);
         if (z < 0.999) box.style.zoom = z;
         done(z); return;
       }
-      const apply = z => { box.style.zoom = z; box.style.width = (100 / z) + '%'; box.style.maxWidth = (1120 / z) + 'px'; };  /* 줄어든 만큼 폭을 넓혀 화면 폭을 그대로 쓴다 */
+      /* 줄어든 만큼 폭을 넓혀 화면 폭을 그대로 쓴다 (px 폭은 zoom만큼 줄어 보이므로 화면에는 min(main, 1120)으로 보인다) */
+      const vis = Math.min(main.clientWidth, 1120);
+      const apply = z => { box.style.zoom = z; box.style.width = (vis / z) + 'px'; box.style.maxWidth = 'none'; };
       const fits = z => { apply(z); return box.scrollHeight * z <= avail + 1; };
       let z = 1;
       if (!fits(1)) {                          /* 폭이 바뀌면 줄바꿈도 바뀌므로 이분 탐색으로 맞는 배율을 찾는다 */
@@ -286,7 +288,11 @@ const DECK_PRINT = (() => {
     state = { fit: body.classList.contains('fit'), scroll: scrollY };
     body.classList.add('fit', 'print-prep');
     body.classList.toggle('pp-noink', !opts.ink);
+    document.dispatchEvent(new CustomEvent('deck:printprepare'));
     ANIM.freeze(true);
+    /* 숫자가 올라가는 효과가 도는 중이어도 최종값으로 찍는다 */
+    document.querySelectorAll('[data-count]').forEach(el => { el.textContent = (el.dataset.pre || '') + parseFloat(el.dataset.count).toFixed(+(el.dataset.dec || 0)) + (el.dataset.suf || ''); });
+    const inkOn = opts.ink && !body.classList.contains('ink-hidden');
     const wk = (document.querySelector('.wkchip') || {}).textContent || '';
     const keep = PAGER.slides.filter(sl => {
       if (!opts.anim && sl.classList.contains('anim')) return false;
@@ -301,8 +307,19 @@ const DECK_PRINT = (() => {
       box.style.padding = box.dataset.pad || '';
       const stage = box.querySelector('.scn .stage');
       if (stage) stage.style.maxWidth = box.dataset.smw || '760px';
-      const z = Math.min(1.15, CW / lw, CH / box.scrollHeight);
+      /* 필기가 내용 상자 밖(여백)에 있으면 그 필기까지 한 쪽에 들어오게 범위를 넓힌다 */
+      const hh = box.scrollHeight;
+      let x0 = 0, x1 = lw, y0 = 0, y1 = hh;
+      const g = inkOn && box.querySelector(':scope > svg.ink > g');
+      if (g && g.firstChild) {
+        try {
+          const bb = g.getBBox(), k = lw / 1000, m = 10;
+          if (bb.width || bb.height) { x0 = Math.min(0, bb.x * k - m); x1 = Math.max(lw, (bb.x + bb.width) * k + m); y0 = Math.min(0, bb.y * k - m); y1 = Math.max(hh, (bb.y + bb.height) * k + m); }
+        } catch (e) { /* 범위를 못 재면 내용 상자만 맞춘다 */ }
+      }
+      const z = Math.min(1.15, CW / (x1 - x0), CH / (y1 - y0));
       box.style.zoom = z;
+      box.style.left = (lw / 2 - (x0 + x1) / 2) + 'px'; box.style.top = (hh / 2 - (y0 + y1) / 2) + 'px';
       const meta = h('div', 'pp-meta', `<span>XREAL CV · AI Agent Community · ${wk} · ${title()}</span><span>${String(i + 1).padStart(2, '0')} / ${String(keep.length).padStart(2, '0')}</span>`);
       sl.appendChild(meta);
       sl.classList.toggle('pp-last', i === keep.length - 1);
@@ -318,7 +335,7 @@ const DECK_PRINT = (() => {
     document.querySelectorAll('.pp-meta').forEach(e => e.remove());
     PAGER.slides.forEach(sl => {
       sl.classList.remove('pp-skip', 'pp-last');
-      const box = sl.firstChild; box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = ''; box.style.padding = '';
+      const box = sl.firstChild; box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = ''; box.style.padding = ''; box.style.left = ''; box.style.top = '';
       const stage = box.querySelector('.scn .stage'); if (stage) stage.style.maxWidth = '';
     });
     ANIM.freeze(false);
