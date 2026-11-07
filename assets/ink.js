@@ -46,10 +46,12 @@ const INK = (() => {
       const r = { s }, lw = +x.lw;
       if (lw >= 200 && lw <= 4000) {
         r.lw = lw;
-        r.pad = typeof x.pad === 'string' && PAD.test(x.pad.trim()) ? x.pad.trim() : '';
-        if (typeof x.smw === 'string' && PX.test(x.smw)) r.smw = x.smw;
+        const pv = typeof x.pad === 'string' && PAD.test(x.pad.trim()) ? x.pad.trim().split(/\s+/).map(parseFloat) : null;
+        r.pad = pv && pv.every(n => n <= 200) && (pv[1] || 0) + (pv[3] !== undefined ? pv[3] : pv[1] || 0) < lw / 2 ? x.pad.trim() : '';
+        if (typeof x.smw === 'string' && PX.test(x.smw) && parseFloat(x.smw) <= lw) r.smw = x.smw;
         if (+x.h > 0 && +x.h < 20000) r.h = +x.h;
-        if (Array.isArray(x.dt)) r.dt = x.dt.filter(i => Number.isInteger(i) && i >= 0 && i < 100).slice(0, 50);
+        if (Array.isArray(x.st) && x.st.length <= 300 && x.st.every(v => v === 0 || v === 1 || (typeof v === 'string' && v.length <= 12)))
+          r.st = x.st.slice();
       }
       out[id] = r;
     });
@@ -151,18 +153,51 @@ const INK = (() => {
   function measure(sl) {
     const box = sl.firstChild;
     if (!fitMode() || !box.clientWidth || !sl.classList.contains('cur')) return null;
-    const cs = getComputedStyle(box), st = box.querySelector('.scn .stage');
-    const m = { lw: box.clientWidth, pad: [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].join(' '), h: box.scrollHeight };
-    if (st) m.smw = st.offsetWidth + 'px';
-    const det = [...box.querySelectorAll('details')];
-    if (det.length) m.dt = det.map((x, i) => (x.open ? i : -1)).filter(i => i >= 0);
+    const cs = getComputedStyle(box), stg = box.querySelector('.scn .stage');
+    const m = { lw: box.clientWidth, pad: [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].join(' '), h: box.offsetHeight };
+    if (stg) m.smw = stg.offsetWidth + 'px';
+    const st = snap(box);
+    if (st.length) m.st = st;
     return m;
   }
-  const metaOf = d => (d && d.lw ? { lw: d.lw, pad: d.pad, ...(d.smw ? { smw: d.smw } : {}), ...(d.h ? { h: d.h } : {}), ...(d.dt ? { dt: d.dt } : {}) } : null);
-  /* 필기할 때 펼쳐 두었던 항목을 그대로 되살린다 (높이가 같아야 필기가 제자리에 온다) */
+  const metaOf = d => (d && d.lw ? { lw: d.lw, pad: d.pad, ...(d.smw ? { smw: d.smw } : {}), ...(d.h ? { h: d.h } : {}), ...(d.st ? { st: d.st } : {}) } : null);
+
+  /* ---------- 데모 상태 ----------
+     필기는 처음 필기한 순간의 데모 상태(고른 탭·카드, 슬라이더 값, 체크, 펼친 항목)에 붙는다.
+     그 상태를 기록해 두었다가 장에 들어올 때와 PDF로 뽑을 때 되살린다 */
+  const STATE_SEL = '[aria-pressed],[aria-selected],[aria-expanded],input[type=range],input[type=checkbox],details';
+  const stateEls = box => [...box.querySelectorAll(STATE_SEL)];
+  const stateOf = el => el.tagName === 'DETAILS' ? (el.open ? 1 : 0)
+    : el.type === 'range' ? String(el.value)
+    : el.type === 'checkbox' ? (el.checked ? 1 : 0)
+    : (el.getAttribute('aria-pressed') || el.getAttribute('aria-selected') || el.getAttribute('aria-expanded')) === 'true' ? 1 : 0;
+  const snap = box => stateEls(box).map(stateOf);
+  const same = (a, b) => a.length === b.length && a.every((x, i) => String(x) === String(b[i]));
+  let restoring = false;
+  function stateOk(sl, d) {
+    if (!d || !Array.isArray(d.st)) return true;
+    const cur = snap(sl.firstChild);
+    return cur.length !== d.st.length || same(cur, d.st);       /* 구조가 바뀐 장은 비교하지 않는다 */
+  }
   function restoreState(sl, d) {
-    if (!d || !Array.isArray(d.dt)) return;
-    sl.firstChild.querySelectorAll('details').forEach((x, i) => { const o = d.dt.includes(i); if (x.open !== o) x.open = o; });
+    if (!d || !Array.isArray(d.st) || stateOk(sl, d)) return;
+    const box = sl.firstChild;
+    restoring = true;
+    try {
+      for (let pass = 0; pass < 3; pass++) {
+        const els = stateEls(box), cur = els.map(stateOf);
+        if (same(cur, d.st)) break;
+        els.forEach((el, i) => {
+          const want = d.st[i];
+          if (String(want) === String(cur[i])) return;
+          const fire = () => { el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
+          if (el.tagName === 'DETAILS') el.open = !!want;
+          else if (el.type === 'range') { el.value = want; fire(); }
+          else if (el.type === 'checkbox') { el.checked = !!want; fire(); }
+          else if (want === 1 || pass > 0) el.click();          /* 첫 바퀴는 켜기만 (탭처럼 하나만 고르는 무리는 나머지가 저절로 꺼진다) */
+        });
+      }
+    } finally { restoring = false; }
   }
   function slot(sl, meta) {
     let d = data.slides[sl.id];
@@ -227,6 +262,16 @@ const INK = (() => {
     if (keep.length !== d.s.length) { d.s.splice(0, d.s.length, ...keep); render(a.sl); }
   }
   const isEraserButton = e => e.button === 5 || (e.buttons & 32) === 32;
+  /* 장이 막 들어와 미끄러지는 중이면 끝난 자리로 바로 옮긴 뒤 그린다 */
+  function settle(sl) {
+    const rv = [...sl.querySelectorAll('.rv')];
+    rv.forEach(x => { x.style.transition = 'none'; });
+    sl.classList.add('has-ink');
+    rv.forEach(x => x.classList.add('in'));
+    if (sl.getAnimations) sl.getAnimations().forEach(a => { try { a.finish(); } catch (err) { /* 무시 */ } });
+    void sl.offsetWidth;
+    requestAnimationFrame(() => rv.forEach(x => { x.style.transition = ''; }));
+  }
   function down(e) {
     if (tool === 'hand' || active) return;
     if (e.pointerType === 'touch' && penSeen) return;          /* 펜을 쓰기 시작하면 손바닥 터치는 무시 */
@@ -235,6 +280,15 @@ const INK = (() => {
     const sl = curSlide(); if (!sl) return;
     if (!fitMode()) { toast('필기는 슬라이드가 한 화면에 맞춰진 넓은 창에서만 쓸 수 있습니다 · 창을 넓혀 주세요', 3200); return; }
     e.preventDefault();
+    const ae = document.activeElement;
+    if (ae && ae.closest && ae.closest('#inkbar, .ink-pop')) ae.blur();
+    const dd = data.slides[sl.id];
+    if (dd && dd.s.length && !stateOk(sl, dd)) {
+      restoreState(sl, dd); sl.classList.remove('ink-stale'); PAGER.refit();
+      toast('이 장의 필기는 처음 필기할 때의 데모 상태에 붙어 있어 그 상태로 되돌렸습니다 · 다시 그려 주세요', 4200);
+      return;
+    }
+    settle(sl);
     try { main.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
     const kind = isEraserButton(e) ? 'eraser' : tool;
     if (hidden) setHidden(false);
@@ -293,7 +347,7 @@ const INK = (() => {
   main.addEventListener('pointercancel', up);
   main.addEventListener('lostpointercapture', e => { if (active && e.pointerId === active.id) finish(); });
   /* 그리는 중에는 슬라이드의 버튼·링크가 눌리지 않게 막는다 */
-  main.addEventListener('click', e => { if (tool !== 'hand' && fitMode()) { e.stopPropagation(); e.preventDefault(); } }, true);
+  main.addEventListener('click', e => { if (tool !== 'hand' && fitMode() && !restoring) { e.stopPropagation(); e.preventDefault(); } }, true);
 
   /* 지우개·레이저 위치 표시 */
   const cur = h('div', 'ink-cursor'); document.body.appendChild(cur);
@@ -394,6 +448,7 @@ const INK = (() => {
     const eye = bar.querySelector('[data-a=eye]'); eye.setAttribute('aria-pressed', hidden ? 'true' : 'false'); eye.title = hidden ? '필기 보이기 (V)' : '필기 숨기기 (V)';
     bar.querySelector('.ink-count').textContent = n ? n + '획' : '';
   }
+  let openedByKey = false;
   function closePops() {
     [pdfPop, morePop].forEach(x => { x.hidden = true; });
     bar.querySelectorAll('[aria-haspopup]').forEach(b => b.setAttribute('aria-expanded', 'false'));
@@ -475,8 +530,8 @@ const INK = (() => {
     else if (b.dataset.a === 'redo') redo();
     else if (b.dataset.a === 'clear') clearSlide();
     else if (b.dataset.a === 'eye') setHidden(!hidden);
-    else if (b.dataset.a === 'pdf') pop(pdfPop, b);
-    else if (b.dataset.a === 'more') pop(morePop, b);
+    else if (b.dataset.a === 'pdf') { openedByKey = e.detail === 0; pop(pdfPop, b); }
+    else if (b.dataset.a === 'more') { openedByKey = e.detail === 0; pop(morePop, b); }
     else if (b.dataset.a === 'fold') {
       const min = bar.classList.toggle('ink-min');
       b.setAttribute('aria-expanded', min ? 'false' : 'true'); b.setAttribute('aria-label', min ? '도구 막대 펴기' : '도구 막대 접기');
@@ -494,7 +549,10 @@ const INK = (() => {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && (!pdfPop.hidden || !morePop.hidden)) {
       const b = bar.querySelector(!pdfPop.hidden ? '[data-a=pdf]' : '[data-a=more]');
-      closePops(); e.preventDefault(); if (e.target.closest('.ink-pop')) b.focus(); return;
+      closePops(); e.preventDefault();
+      if (openedByKey && e.target.closest && e.target.closest('.ink-pop')) b.focus();
+      else { const ae = document.activeElement; if (ae && ae.closest && ae.closest('#inkbar, .ink-pop')) ae.blur(); }
+      return;
     }
     if (e.target.closest('input,textarea,select,[contenteditable]')) return;
     /* 한글 입력 상태에서도 P·E 같은 단축키가 듣도록 글쇠 위치(e.code)로도 읽는다 */
@@ -516,7 +574,13 @@ const INK = (() => {
   /* ---------- 슬라이드 엔진과 맞추기 ---------- */
   const warned = new Set();
   let flowWarned = false;
-  document.addEventListener('deck:slide', () => { finish(); ui(); });
+  document.addEventListener('deck:slide', e => {
+    finish();
+    const sl = e.detail.slide, d = data.slides[sl.id];
+    if (d && d.s.length && !stateOk(sl, d)) { restoreState(sl, d); PAGER.refit(); }
+    sl.classList.toggle('ink-stale', !!(d && d.s.length && !stateOk(sl, d)));
+    ui();
+  });
   document.addEventListener('deck:fit', e => {
     const sl = e.detail.slide, L = layers.get(sl.id), d = data.slides[sl.id];
     if (L) rescale(L);
@@ -526,24 +590,49 @@ const INK = (() => {
       return;
     }
     flowWarned = false;
-    if (!d.lw) { slot(sl, null); return; }                         /* 레이아웃 기록이 없던 옛 필기는 지금 보이는 대로 고정 */
-    if (d.h && Math.abs(sl.firstChild.scrollHeight - d.h) > 4) {
+    if (!d.lw) { slot(sl, null); dirty.add(sl.id); save(); return; }  /* 레이아웃 기록이 없던 옛 필기는 지금 보이는 대로 고정 */
+    /* 슬라이드 조작(손 도구)으로 데모 상태가 바뀌면 필기를 잠시 숨긴다. 펜을 대면 되돌린다 */
+    const stale = !stateOk(sl, d);
+    if (stale !== sl.classList.contains('ink-stale')) {
+      sl.classList.toggle('ink-stale', stale);
+      if (stale) toast('데모 상태가 필기할 때와 달라 필기를 잠시 숨깁니다 · 펜을 대면 그 상태로 되돌립니다', 3600);
+      PAGER.refit();
+      return;
+    }
+    if (stale) return;
+    if (d.h && Math.abs(sl.firstChild.offsetHeight - d.h) > 4) {
       if (!warned.has(sl.id)) { warned.add(sl.id); toast('필기한 뒤 이 장의 내용 높이가 바뀌었습니다 · 데모·펼친 항목을 필기할 때와 같게 두면 필기가 제자리에 옵니다', 4500); }
     } else warned.delete(sl.id);
   });
-  document.addEventListener('deck:printprepare', () => slides.forEach(sl => restoreState(sl, data.slides[sl.id])));
+  document.addEventListener('deck:printprepare', () => {
+    document.querySelectorAll('svg.ink .ink-l').forEach(x => x.remove());      /* 레이저는 PDF에 남기지 않는다 */
+    slides.forEach(sl => { const d = data.slides[sl.id]; if (d && d.s.length) { restoreState(sl, d); sl.classList.remove('ink-stale'); } });
+  });
   document.addEventListener('deck:printlayout', () => layers.forEach(rescale));
   /* 다른 탭·창에서 같은 주차의 필기를 바꾸면 받아 온다 (이 탭에서 아직 저장 안 한 장은 지킨다) */
+  const canon = r => JSON.stringify(r ? (sanitize({ k: r }).k || null) : null);
   addEventListener('storage', e => {
     if (e.key !== KEY || active) return;
     const fresh = load();
-    dirty.forEach(id => { if (data.slides[id]) fresh.slides[id] = data.slides[id]; else delete fresh.slides[id]; });
-    data = fresh; hist.clear();
-    slides.forEach(sl => { const d = data.slides[sl.id]; pinFrom(sl, d); if (d || layers.has(sl.id)) render(sl); });
+    new Set([...Object.keys(data.slides), ...Object.keys(fresh.slides)]).forEach(id => {
+      if (dirty.has(id)) return;                                        /* 이 탭에서 아직 저장 안 한 장은 지킨다 */
+      const a = data.slides[id], b = fresh.slides[id];
+      if (canon(a) === canon(b)) return;                                /* 바뀐 장만 바꾸고, 나머지 장의 되돌리기 기록은 둔다 */
+      if (b) data.slides[id] = b; else delete data.slides[id];
+      hist.delete(id);
+      const sl = slides.find(x => x.id === id);
+      if (sl) { pinFrom(sl, b); render(sl); }
+    });
     PAGER.refit(); ui();
   });
 
   document.body.classList.add('ink-on');
+  /* 도구 막대가 실제로 차지하는 폭만큼 슬라이드 오른쪽을 비운다 (짧은 창에서는 두 줄로 접힌다) */
+  let lastW = 0;
+  const setW = () => { const w = bar.offsetWidth; if (w && w !== lastW) { lastW = w; document.documentElement.style.setProperty('--inkw', w + 'px'); PAGER.layout(); } };
+  if ('ResizeObserver' in window) new ResizeObserver(setW).observe(bar);
+  addEventListener('resize', setW);
+  setW();
   PAGER.layout();
   /* 저장된 필기 그리기 */
   slides.forEach(sl => { const d = data.slides[sl.id]; if (d && d.s && d.s.length) { restoreState(sl, d); pinFrom(sl, d); render(sl); } });

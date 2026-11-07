@@ -5,6 +5,9 @@ svg.ink .ink-p{stroke:#e1262c}
 svg.ink .ink-h{stroke:#e1262c;stroke-opacity:.22}
 svg.ink .ink-l{stroke:#ff1d1d;filter:drop-shadow(0 0 3px rgba(255,40,40,.9));transition:opacity .6s ease}
 body.ink-hidden svg.ink{display:none}
+/* 데모 상태가 필기할 때와 다르면 잠시 숨긴다 (PDF에서는 상태를 되살려 찍는다) */
+.slide.ink-stale svg.ink{display:none}
+body.print-prep .slide.ink-stale svg.ink{display:block}
 /* 좁은 창(스크롤 모드)에서는 레이아웃이 달라 필기가 어긋나므로 숨긴다 */
 body.ink-on:not(.fit):not(.print-prep) svg.ink{display:none}
 /* 필기가 있는 장은 등장 효과로 내용이 미끄러지지 않게 한다 (그동안 필기만 떠 보이지 않게) */
@@ -25,9 +28,9 @@ body.inking.fit.tool-eraser main,body.inking.fit.tool-laser main{cursor:none}
 .inkbar{position:fixed;right:10px;top:calc((var(--top,110px) + 100vh - var(--bot,76px)) / 2);transform:translateY(-50%);z-index:70;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px;background:var(--bg);border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink);max-height:calc(100vh - var(--top,110px) - var(--bot,76px) - 12px);flex-wrap:wrap;align-content:center;overflow-y:auto;scrollbar-width:none}
 .inkbar::-webkit-scrollbar{display:none}
 /* 좁은 창에서는 도구 막대가 내용을 덮지 않게 여백을 둔다 */
-@media (min-width:760px){body.ink-on:not(.fit) main{padding-right:62px}}
+@media (min-width:760px){body.ink-on:not(.fit) main{padding-right:calc(var(--inkw,48px) + 14px)}}
 /* 도구 막대가 슬라이드를 가리지 않게 오른쪽 자리를 비운다 */
-body.ink-on.fit main{right:62px}
+body.ink-on.fit main{right:calc(var(--inkw,48px) + 14px)}
 .inkbar button{width:38px;height:36px;display:grid;place-items:center;border:0;background:transparent;color:var(--ink);cursor:pointer;padding:0}
 .inkbar button:hover{background:var(--soft)}
 .inkbar button[aria-pressed="true"]{background:var(--accent);color:#fff}
