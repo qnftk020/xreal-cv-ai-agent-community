@@ -49,10 +49,10 @@ button{font:inherit;color:inherit}
 .kicker{font-size:14px;font-weight:700;color:var(--sub)}
 h1,h2,h3{letter-spacing:-.03em;text-wrap:balance}
 .hero{padding:72px 0 48px}
-.hero h1{font-weight:800;font-size:clamp(38px,7.4vw,84px);line-height:1.08;margin:22px 0 28px;letter-spacing:-.045em}
+.hero h1{font-weight:800;font-size:clamp(38px,7.4cqw,84px);line-height:1.08;margin:22px 0 28px;letter-spacing:-.045em}
 .hero .slab{border:4px solid var(--ink);max-width:900px}
 .hero .slab b{display:block;background:var(--ink);color:#fff;font-size:13px;letter-spacing:.14em;padding:8px 22px}
-.hero .slab p{margin:0;padding:18px 22px 20px;font-weight:800;font-size:clamp(18px,2.6vw,27px);line-height:1.45}
+.hero .slab p{margin:0;padding:18px 22px 20px;font-weight:800;font-size:clamp(18px,2.6cqw,27px);line-height:1.45}
 .hero .note{margin-top:22px;font-weight:600;font-size:14px}
 .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
 .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;border:2px solid var(--ink);background:var(--bg);color:var(--ink);
@@ -64,7 +64,7 @@ h1,h2,h3{letter-spacing:-.03em;text-wrap:balance}
 
 .sec{padding:64px 0 8px;scroll-margin-top:64px}
 .sec-head .eyebrow{margin-bottom:12px}
-.sec-head h2{font-weight:800;font-size:clamp(26px,4vw,42px);line-height:1.2;margin:0 0 10px}
+.sec-head h2{font-weight:800;font-size:clamp(26px,4cqw,42px);line-height:1.2;margin:0 0 10px}
 .sec-head p{margin:0;color:var(--sub);max-width:72ch}
 .panel{border:2px solid var(--ink);padding:22px 24px;background:var(--bg)}
 .panel.thick{border-width:4px}
@@ -78,7 +78,7 @@ ul.sq li::before{content:"";position:absolute;left:2px;top:.62em;width:9px;heigh
 .redline{display:grid;grid-template-columns:150px 1fr;gap:16px;border-top:3px solid var(--accent);padding-top:16px;margin-top:28px}
 .redline b{color:var(--accent);font-size:20px;font-weight:800}
 .redline p{margin:0}
-@media (max-width:640px){.redline{grid-template-columns:1fr;gap:4px}}
+@container (max-width:640px){.redline{grid-template-columns:1fr;gap:4px}}
 .cap{font-size:13.5px;color:var(--sub);margin:14px 0 0}
 .formula{border:2px solid var(--ink);padding:12px 18px;font-weight:800;margin-top:16px;overflow-x:auto;white-space:nowrap}
 
@@ -92,7 +92,7 @@ ul.sq li::before{content:"";position:absolute;left:2px;top:.62em;width:9px;heigh
 /* 숫자 카드 */
 .stat{border:2px solid var(--ink);padding:24px 26px;transition:transform .2s,box-shadow .2s}
 .stat:hover{transform:translate(-4px,-4px);box-shadow:6px 6px 0 var(--ink)}
-.stat .big{font-size:clamp(40px,5.4vw,64px);font-weight:800;line-height:1.05;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.stat .big{font-size:clamp(40px,5.4cqw,64px);font-weight:800;line-height:1.05;letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .stat h4{font-size:19px;font-weight:800;margin:12px 0 6px}
 .stat p{margin:0;color:var(--sub)}
 
@@ -117,5 +117,6 @@ ul.sq li::before{content:"";position:absolute;left:2px;top:.62em;width:9px;heigh
 .foot p{margin:0}
 .foot strong{color:var(--ink)}
 .domain{font-family:var(--mono);font-size:13px;background:var(--soft);padding:2px 8px;color:var(--ink)}
-@media (max-width:640px){.formula{white-space:normal}.tscroll .tbl{min-width:620px}.hero{padding-top:44px}}
+@container (max-width:640px){.formula{white-space:normal}.tscroll .tbl{min-width:620px}}
+@media (max-width:640px){.hero{padding-top:44px}}
 @media (max-width:640px){.brand .div,.brand .sub,.wkchip{display:none}.brand .mark{width:30px;height:30px}.brand .word{font-size:20px}.topbar .wrap{min-height:48px;gap:8px}.topnav{margin-left:auto}.topnav a{padding:4px 7px;font-size:12.5px}.brand{font-size:14px}}

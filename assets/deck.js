@@ -94,9 +94,10 @@ const ANIM = (() => {
   });
 
   /* 지금 보이는 슬라이드의 장면만 움직인다 */
-  let last = performance.now();
+  let last = performance.now(), frozen = false;
   function tick(now) {
     const dt = Math.min(0.1, Math.max(0, (now - last) / 1000)); last = now;
+    if (frozen) { requestAnimationFrame(tick); return; }
     for (const it of items) {
       const sl = it.el.closest('.slide');
       if (!sl || !sl.classList.contains('cur')) continue;
@@ -109,7 +110,17 @@ const ANIM = (() => {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => items.forEach(i => { i.fitted = false; }));
   requestAnimationFrame(tick);
   /* 슬라이드에 들어올 때마다 처음부터 */
-  return { enter(slide) { items.forEach(it => { if (slide.contains(it.el)) { restart(it); it.manual = false; it.playing = !XR.reduce; } }); } };
+  return {
+    enter(slide) { items.forEach(it => { if (slide.contains(it.el)) { restart(it); it.manual = false; it.playing = !XR.reduce; } }); },
+    /* PDF·인쇄: 모든 장면을 마지막 동작 상태로 멈춘다. false면 원래대로 돌린다 */
+    freeze(on) {
+      frozen = !!on;
+      items.forEach(it => {
+        if (on) { it.saved = [it.t, it.playing, it.manual, it.target, it.hold]; it.t = lastStep(it); it.playing = false; it.S.fit(); it.fitted = true; render(it); }
+        else if (it.saved) { [it.t, it.playing, it.manual, it.target, it.hold] = it.saved; it.saved = null; render(it); }
+      });
+    }
+  };
 })();
 
 /* ---------- 슬라이드: 장을 화면 단위로 나누고, 넓은 화면에서는 스크롤 없이 맞춘다 ---------- */
@@ -169,8 +180,19 @@ const PAGER = (() => {
       const sl = slides[cur]; if (!sl) return;
       const box = sl.firstChild;
       box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = '';
-      if (!document.body.classList.contains('fit')) { $('zoomNote').classList.remove('on'); return; }
+      const stage = box.querySelector('.scn .stage'); if (stage) stage.style.maxWidth = '';
+      const done = z => { $('zoomNote').textContent = '화면 맞춤 ' + Math.round(z * 100) + '%'; $('zoomNote').classList.toggle('on', z < 0.999); document.dispatchEvent(new CustomEvent('deck:fit', { detail: { slide: sl, box } })); };
+      if (!document.body.classList.contains('fit')) { $('zoomNote').classList.remove('on'); document.dispatchEvent(new CustomEvent('deck:fit', { detail: { slide: sl, box } })); return; }
       const avail = main.clientHeight;
+      /* 필기가 있는 장은 필기한 순간의 레이아웃 폭을 그대로 쓰고 배율만 바꾼다. 줄바꿈이 같아야 필기가 제자리에 남는다 */
+      const lw = +box.dataset.lw || 0;
+      if (lw) {
+        box.style.width = lw + 'px'; box.style.maxWidth = 'none';
+        if (stage && box.dataset.smw) stage.style.maxWidth = box.dataset.smw;
+        const z = Math.min(1, main.clientWidth / lw, avail / box.scrollHeight);
+        if (z < 0.999) box.style.zoom = z;
+        done(z); return;
+      }
       const apply = z => { box.style.zoom = z; box.style.width = (100 / z) + '%'; box.style.maxWidth = (1120 / z) + 'px'; };  /* 줄어든 만큼 폭을 넓혀 화면 폭을 그대로 쓴다 */
       const fits = z => { apply(z); return box.scrollHeight * z <= avail + 1; };
       let z = 1;
@@ -179,8 +201,7 @@ const PAGER = (() => {
         for (let k = 0; k < 8; k++) { const m = (lo + hi) / 2; if (fits(m)) lo = m; else hi = m; }
         z = lo; apply(z);
       } else { box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = ''; }
-      $('zoomNote').textContent = '화면 맞춤 ' + Math.round(z * 100) + '%';
-      $('zoomNote').classList.toggle('on', z < 0.999);
+      done(z);
     });
   }
   addEventListener('resize', layout);
@@ -208,6 +229,7 @@ const PAGER = (() => {
     if (!opt.noHash) history.replaceState(null, '', '#' + slides[i].id);
     window.scrollTo(0, 0);
     refit();
+    document.dispatchEvent(new CustomEvent('deck:slide', { detail: { slide: slides[i], index: i } }));
   }
   function reveal(s) {
     if (XR.reduce) { s.querySelectorAll('.rv').forEach(e => e.classList.add('in')); return; }
@@ -242,5 +264,74 @@ const PAGER = (() => {
   layout();
   go(start >= 0 ? start : 0, { noHash: start < 0 });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
-  return { go, refit };
+  return { go, refit, layout, slides, cur: () => cur, label };
+})();
+
+/* ---------- PDF·인쇄: 슬라이드 한 장을 16:9 한 쪽으로 배치한다 ----------
+   인쇄 창(Ctrl+P 포함)이 열리기 직전에 배치하고, 닫히면 원래 화면으로 돌린다.
+   필기 도구의 'PDF로 내보내기'는 DECK_PRINT.opts를 정한 뒤 window.print()를 부른다. */
+const DECK_PRINT = (() => {
+  const PW = 1280, PH = 720, CW = PW - 88, CH = PH - 36 - 56;   /* 쪽 크기와 내용 영역 (CSS px) */
+  const opts = { ink: true, anim: true, onlyInk: false };
+  let state = null;
+  const title = () => {
+    const t = document.querySelector('.slide .hero h1');
+    if (!t) return document.title;
+    const c = t.cloneNode(true); c.querySelectorAll('br').forEach(b => b.replaceWith(' '));
+    return c.textContent.replace(/\s+/g, ' ').trim();
+  };
+  function prepare() {
+    if (state) return;
+    const body = document.body;
+    state = { fit: body.classList.contains('fit'), scroll: scrollY };
+    body.classList.add('fit', 'print-prep');
+    body.classList.toggle('pp-noink', !opts.ink);
+    ANIM.freeze(true);
+    const wk = (document.querySelector('.wkchip') || {}).textContent || '';
+    const keep = PAGER.slides.filter(sl => {
+      if (!opts.anim && sl.classList.contains('anim')) return false;
+      if (opts.onlyInk && !sl.querySelector('svg.ink path')) return false;
+      return true;
+    });
+    PAGER.slides.forEach(sl => sl.classList.toggle('pp-skip', !keep.includes(sl)));
+    keep.forEach((sl, i) => {
+      const box = sl.firstChild;
+      const lw = +box.dataset.lw || 1120;
+      box.style.zoom = ''; box.style.maxWidth = 'none'; box.style.width = lw + 'px';
+      box.style.padding = box.dataset.pad || '';
+      const stage = box.querySelector('.scn .stage');
+      if (stage) stage.style.maxWidth = box.dataset.smw || '760px';
+      const z = Math.min(1.15, CW / lw, CH / box.scrollHeight);
+      box.style.zoom = z;
+      const meta = h('div', 'pp-meta', `<span>XREAL CV · AI Agent Community · ${wk} · ${title()}</span><span>${String(i + 1).padStart(2, '0')} / ${String(keep.length).padStart(2, '0')}</span>`);
+      sl.appendChild(meta);
+      sl.classList.toggle('pp-last', i === keep.length - 1);
+    });
+    document.dispatchEvent(new CustomEvent('deck:printlayout', { detail: { on: true } }));
+    return keep.length;
+  }
+  function cleanup() {
+    if (!state) return;
+    const body = document.body;
+    body.classList.remove('print-prep', 'pp-noink');
+    if (!state.fit) body.classList.remove('fit');
+    document.querySelectorAll('.pp-meta').forEach(e => e.remove());
+    PAGER.slides.forEach(sl => {
+      sl.classList.remove('pp-skip', 'pp-last');
+      const box = sl.firstChild; box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = ''; box.style.padding = '';
+      const stage = box.querySelector('.scn .stage'); if (stage) stage.style.maxWidth = '';
+    });
+    ANIM.freeze(false);
+    const y = state.scroll; state = null;
+    PAGER.layout();
+    scrollTo(0, y);
+    document.dispatchEvent(new CustomEvent('deck:printlayout', { detail: { on: false } }));
+  }
+  /* 쪽 수 미리 세기 (내보내기 창에 표시) */
+  function count(o = opts) {
+    return PAGER.slides.filter(sl => (o.anim || !sl.classList.contains('anim')) && (!o.onlyInk || sl.querySelector('svg.ink path'))).length;
+  }
+  addEventListener('beforeprint', prepare);
+  addEventListener('afterprint', cleanup);
+  return { opts, prepare, cleanup, count };
 })();
