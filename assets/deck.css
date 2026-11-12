@@ -285,7 +285,7 @@ body.fit{overflow:hidden;height:100vh;height:100dvh;padding-bottom:0}
 
 /* ---------- 슬라이드 상자 ----------
    슬라이드 안의 반응형 규칙은 화면(@media)이 아니라 이 상자의 폭(@container, cqw)에 맞춘다.
-   그래야 PDF로 뽑을 때(인쇄 창의 폭은 화면과 다르다)도 화면과 같은 줄바꿈이 나오고, 필기가 제자리에 남는다. */
+   그래야 PDF로 뽑을 때(인쇄 창의 폭은 화면과 다르다)도 화면과 같은 줄바꿈이 나온다. */
 .fitbox{position:relative;container-type:inline-size}
 
 /* ---------- PDF·인쇄: 슬라이드 한 장 = 16:9 한 쪽 (1280×720) ---------- */
@@ -305,9 +305,8 @@ body.print-prep .pp-meta{position:absolute;left:44px;right:44px;bottom:18px;disp
 body.print-prep .pp-meta span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.print-prep .rv{opacity:1!important;transform:none!important;transition:none!important}
 body.print-prep *{animation:none!important;transition:none!important}
-/* 화면 조작용 요소는 자리만 남기고 감춘다 (자리를 없애면 아래 내용이 올라가 필기가 어긋난다) */
+/* 화면 조작용 요소는 자리만 남기고 감춘다 */
 body.print-prep .btns,body.print-prep .scn .ctl,body.print-prep .scn .src,body.print-prep .demo-h .hint{visibility:hidden!important}
 body.print-prep .scn .prog{display:none!important}
-body.print-prep.pp-noink svg.ink{display:none!important}
 .pp-meta{display:none}
 body.print-prep .pp-meta{display:flex}

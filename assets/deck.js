@@ -123,20 +123,6 @@ const ANIM = (() => {
   };
 })();
 
-/* 필기(저장된 획만, 레이저 제외)가 내용 상자 밖으로 나간 범위. 상자 기준 레이아웃 px, 없으면 null */
-function inkBounds(box, lw, h) {
-  if (document.body.classList.contains('ink-hidden') || document.body.classList.contains('pp-noink')) return null;
-  if (box.parentNode && box.parentNode.classList.contains('ink-stale') && !document.body.classList.contains('print-prep')) return null;
-  const g = box.querySelector(':scope > svg.ink > g'); if (!g) return null;
-  const ps = g.querySelectorAll('path:not(.ink-l)'); if (!ps.length) return null;
-  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-  try {
-    ps.forEach(p => { const b = p.getBBox(), w = (+p.getAttribute('stroke-width') || 0) / 2; x0 = Math.min(x0, b.x - w); y0 = Math.min(y0, b.y - w); x1 = Math.max(x1, b.x + b.width + w); y1 = Math.max(y1, b.y + b.height + w); });
-  } catch (e) { return null; }
-  const k = lw / 1000, m = 8;
-  return { x0: Math.min(0, x0 * k - m), x1: Math.max(lw, x1 * k + m), y0: Math.min(0, y0 * k - m), y1: Math.max(h, y1 * k + m) };
-}
-
 /* ---------- 슬라이드: 장을 화면 단위로 나누고, 넓은 화면에서는 스크롤 없이 맞춘다 ---------- */
 const PAGER = (() => {
   const main = document.querySelector('main');
@@ -193,41 +179,22 @@ const PAGER = (() => {
     fq = requestAnimationFrame(() => {
       const sl = slides[cur]; if (!sl) return;
       const box = sl.firstChild;
-      box.style.transform = ''; box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = ''; box.style.padding = '';
-      const stage = box.querySelector('.scn .stage'); if (stage) stage.style.maxWidth = '';
+      box.style.transform = ''; box.style.width = ''; box.style.maxWidth = '';
       const fire = () => document.dispatchEvent(new CustomEvent('deck:fit', { detail: { slide: sl, box } }));
       if (!document.body.classList.contains('fit')) { $('zoomNote').classList.remove('on'); fire(); return; }
       /* 화면 맞춤은 CSS zoom이 아니라 transform으로 한다. zoom은 배율마다 글자 폭이 달라 줄바꿈이 바뀌지만,
          transform은 정한 폭(정수 px)의 레이아웃을 그대로 확대·축소하므로 어느 화면·PDF에서도 줄바꿈이 같다 */
       const W = main.clientWidth, Hh = main.clientHeight;
-      const lw = +box.dataset.lw || 0;
-      let z = 1, u = null;
-      if (lw) {
-        /* 필기가 있는 장: 필기한 순간의 폭·여백을 그대로 쓴다 */
-        box.style.width = lw + 'px'; box.style.maxWidth = 'none'; box.style.padding = box.dataset.pad || '';
-        if (stage && box.dataset.smw) stage.style.maxWidth = box.dataset.smw;
-        const h = box.offsetHeight;
-        z = Math.min(1, Math.min(W, 1120) / lw, Hh / h);           /* 고정 전과 같은 기준(보이는 폭 최대 1120)으로 맞춰 첫 획에서 크기가 튀지 않는다 */
-        /* 여백에 쓴 필기가 화면 밖으로 나가면, 그 필기까지 들어오게 맞춘다 */
-        const b = inkBounds(box, lw, h);
-        if (b) {
-          const cx = (W - lw * z) / 2, cy = (Hh - h * z) / 2;
-          const out = cx + b.x0 * z < 0 || cx + b.x1 * z > W || cy + b.y0 * z < 0 || cy + b.y1 * z > Hh;
-          if (out) { z = Math.min(1, W / (b.x1 - b.x0), Hh / (b.y1 - b.y0)); u = b; }
-        }
-      } else {
-        /* 줄어든 만큼 폭을 넓혀 화면 폭을 그대로 쓴다 */
-        const vis = Math.min(W, 1120);
-        const at = zz => { box.style.width = Math.round(vis / zz) + 'px'; box.style.maxWidth = 'none'; return box.offsetHeight * zz <= Hh + 1; };
-        if (!at(1)) {
-          let lo = 0.5, hi = 1;
-          for (let k = 0; k < 8; k++) { const m = (lo + hi) / 2; if (at(m)) lo = m; else hi = m; }
-          z = lo; at(z);
-        }
+      /* 줄어든 만큼 폭을 넓혀 화면 폭을 그대로 쓴다 */
+      let z = 1;
+      const vis = Math.min(W, 1120);
+      const at = zz => { box.style.width = Math.round(vis / zz) + 'px'; box.style.maxWidth = 'none'; return box.offsetHeight * zz <= Hh + 1; };
+      if (!at(1)) {
+        let lo = 0.5, hi = 1;
+        for (let k = 0; k < 8; k++) { const m = (lo + hi) / 2; if (at(m)) lo = m; else hi = m; }
+        z = lo; at(z);
       }
-      const w = box.offsetWidth, h = box.offsetHeight;
-      const r = u || { x0: 0, x1: w, y0: 0, y1: h };
-      const tx = (W - (r.x1 - r.x0) * z) / 2 - r.x0 * z, ty = (Hh - (r.y1 - r.y0) * z) / 2 - r.y0 * z;
+      const tx = (W - box.offsetWidth * z) / 2, ty = (Hh - box.offsetHeight * z) / 2;
       box.style.transform = `translate(${tx.toFixed(2)}px,${ty.toFixed(2)}px) scale(${z.toFixed(5)})`;
       $('zoomNote').textContent = '화면 맞춤 ' + Math.round(z * 100) + '%'; $('zoomNote').classList.toggle('on', z < 0.999);
       fire();
@@ -298,10 +265,10 @@ const PAGER = (() => {
 
 /* ---------- PDF·인쇄: 슬라이드 한 장을 16:9 한 쪽으로 배치한다 ----------
    인쇄 창(Ctrl+P 포함)이 열리기 직전에 배치하고, 닫히면 원래 화면으로 돌린다.
-   필기 도구의 'PDF로 내보내기'는 DECK_PRINT.opts를 정한 뒤 window.print()를 부른다. */
+   애니메이션 장을 빼려면 DECK_PRINT.opts.anim = false 로 둔 뒤 인쇄한다. */
 const DECK_PRINT = (() => {
   const PW = 1280, PH = 720, PL = 44, PT = 36, CW = PW - 88, CH = PH - 36 - 56;   /* 쪽 크기와 내용 영역 (CSS px) */
-  const opts = { ink: true, anim: true, onlyInk: false };
+  const opts = { anim: true };
   let state = null;
   const title = () => {
     const t = document.querySelector('.slide .hero h1');
@@ -314,31 +281,21 @@ const DECK_PRINT = (() => {
     const body = document.body;
     state = { fit: body.classList.contains('fit'), scroll: scrollY };
     body.classList.add('fit', 'print-prep');
-    body.classList.toggle('pp-noink', !opts.ink);
-    const inkOn = opts.ink;
-    document.dispatchEvent(new CustomEvent('deck:printprepare'));
     ANIM.freeze(true);
     /* 숫자가 올라가는 효과가 도는 중이어도 최종값으로 찍는다 */
     document.querySelectorAll('[data-count]').forEach(el => { el.textContent = (el.dataset.pre || '') + parseFloat(el.dataset.count).toFixed(+(el.dataset.dec || 0)) + (el.dataset.suf || ''); });
     const wk = (document.querySelector('.wkchip') || {}).textContent || '';
-    const keep = PAGER.slides.filter(sl => {
-      if (!opts.anim && sl.classList.contains('anim')) return false;
-      if (opts.onlyInk && !sl.querySelector('svg.ink path:not(.ink-l)')) return false;
-      return true;
-    });
+    const keep = PAGER.slides.filter(sl => opts.anim || !sl.classList.contains('anim'));
     PAGER.slides.forEach(sl => sl.classList.toggle('pp-skip', !keep.includes(sl)));
     keep.forEach((sl, i) => {
       const box = sl.firstChild;
-      const lw = +box.dataset.lw || 1120;
-      box.style.zoom = ''; box.style.transform = ''; box.style.maxWidth = 'none'; box.style.width = lw + 'px';
-      box.style.padding = box.dataset.pad || '';
+      const lw = 1120;
+      box.style.transform = ''; box.style.maxWidth = 'none'; box.style.width = lw + 'px';
       const stage = box.querySelector('.scn .stage');
-      if (stage) stage.style.maxWidth = box.dataset.smw || '760px';
-      /* 필기가 내용 상자 밖(여백)에 있으면 그 필기까지 한 쪽에 들어오게 범위를 넓힌다 */
+      if (stage) stage.style.maxWidth = '760px';
       const hh = box.offsetHeight;
-      const r = (inkOn && inkBounds(box, lw, hh)) || { x0: 0, x1: lw, y0: 0, y1: hh };
-      const z = Math.min(1.15, CW / (r.x1 - r.x0), CH / (r.y1 - r.y0));
-      const tx = PL + (CW - (r.x1 - r.x0) * z) / 2 - r.x0 * z, ty = PT + (CH - (r.y1 - r.y0) * z) / 2 - r.y0 * z;
+      const z = Math.min(1.15, CW / lw, CH / hh);
+      const tx = PL + (CW - lw * z) / 2, ty = PT + (CH - hh * z) / 2;
       box.style.transform = `translate(${tx.toFixed(2)}px,${ty.toFixed(2)}px) scale(${z.toFixed(5)})`;
       const meta = h('div', 'pp-meta', `<span>XREAL CV · AI Agent Community · ${wk} · ${title()}</span><span>${String(i + 1).padStart(2, '0')} / ${String(keep.length).padStart(2, '0')}</span>`);
       sl.appendChild(meta);
@@ -350,12 +307,12 @@ const DECK_PRINT = (() => {
   function cleanup() {
     if (!state) return;
     const body = document.body;
-    body.classList.remove('print-prep', 'pp-noink');
+    body.classList.remove('print-prep');
     if (!state.fit) body.classList.remove('fit');
     document.querySelectorAll('.pp-meta').forEach(e => e.remove());
     PAGER.slides.forEach(sl => {
       sl.classList.remove('pp-skip', 'pp-last');
-      const box = sl.firstChild; box.style.zoom = ''; box.style.width = ''; box.style.maxWidth = ''; box.style.padding = ''; box.style.transform = '';
+      const box = sl.firstChild; box.style.width = ''; box.style.maxWidth = ''; box.style.transform = '';
       const stage = box.querySelector('.scn .stage'); if (stage) stage.style.maxWidth = '';
     });
     ANIM.freeze(false);
@@ -364,11 +321,7 @@ const DECK_PRINT = (() => {
     scrollTo(0, y);
     document.dispatchEvent(new CustomEvent('deck:printlayout', { detail: { on: false } }));
   }
-  /* 쪽 수 미리 세기 (내보내기 창에 표시) */
-  function count(o = opts) {
-    return PAGER.slides.filter(sl => (o.anim || !sl.classList.contains('anim')) && (!o.onlyInk || sl.querySelector('svg.ink path:not(.ink-l)'))).length;
-  }
   addEventListener('beforeprint', prepare);
   addEventListener('afterprint', cleanup);
-  return { opts, prepare, cleanup, count };
+  return { opts, prepare, cleanup };
 })();
