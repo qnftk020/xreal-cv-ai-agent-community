@@ -10,7 +10,7 @@ week1/animations.html 32개 장면 애니메이션 (원본)
 week1/slides-v0.4.pdf 장표 PDF (원본)
 week2/index.html      2주차: 결정 모델과 Jev 엔지니어링, 그리고 에이전트 하네스
 week2/scenes.js       2주차 애니메이션 10개, week2.js 데모 5개
-week3/                공개 예정 페이지
+week3/index.html      3주차: 신영환의 바이브코딩 역사 (week3.js 흐름도)
 assets/deck.js·css    강의 슬라이드 공통 엔진 (장 나누기, 애니메이션 끼우기, 화면 맞춤)
 assets/scene-engine.js 애니메이션 장면 엔진
 assets/               공통 CSS·JS, Pretendard 폰트 (SIL OFL 1.1)

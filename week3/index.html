@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="XREAL CV · AI Agent Community">
-<meta property="og:title" content="3주차 · 공개 예정 — XREAL CV · AI Agent Community">
-<meta property="og:description" content="3주차 강의는 강의 당일 공개됩니다.">
+<meta property="og:title" content="3주차 · 신영환의 바이브코딩 역사">
+<meta property="og:description" content="XREAL CV · AI Agent Community 3주차. 바이브코딩 10개월, 커밋 1,425개로 본 2026년. 에이전트의 결과를 믿기 전에 무엇을 확인하게 되었나.">
 <meta property="og:url" content="https://qnftk020.github.io/xreal-cv-ai-agent-community/week3/">
 <meta property="og:image" content="https://qnftk020.github.io/xreal-cv-ai-agent-community/assets/og.png">
 <meta property="og:image:width" content="1200">
@@ -14,9 +14,68 @@
 <meta property="og:image:alt" content="손을 흔드는 AI 로봇과 'LLM에서 AI 에이전트까지, 3주 강의'">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<title>3주차 · 공개 예정 — XREAL CV · AI Agent Community</title>
+<title>3주차 · 신영환의 바이브코딩 역사 — XREAL CV · AI Agent Community</title>
+<meta name="description" content="xreal-cv-ai-agent-community 3주차 강의. 바이브코딩 10개월, 커밋 1,425개로 본 2026년.">
 <link rel="stylesheet" href="../assets/style.css">
-<style>.lockbox{border:3px dashed var(--sub);color:var(--sub);padding:28px;max-width:720px;margin-top:28px}.lockbox b{display:block;font-size:48px;color:var(--ink);line-height:1;letter-spacing:-.04em}</style>
+<link rel="stylesheet" href="../assets/deck.css">
+<style>
+/* 3주차 전용 */
+.box3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px;margin-top:22px}
+.box3 .panel h3{font-size:17px}
+.panel ul.sq li{margin:5px 0;font-size:15px}
+.mini{border:2px solid var(--ink);padding:14px 18px;margin-top:18px;font-size:14.5px;background:var(--soft)}
+.who{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;border:1.5px solid currentColor;padding:0 6px;margin-left:6px;vertical-align:2px;color:var(--sub)}
+.stat .big.sm{font-size:clamp(34px,4.4cqw,52px)}
+.tbl.sm{font-size:13.5px}.tbl.sm td,.tbl.sm th{padding:9px 12px}
+.tbl a{text-decoration:none;border-bottom:2px solid var(--accent)}
+.tbl a:hover{color:var(--accent)}
+.stage-tag{display:flex;align-items:baseline;gap:14px;margin-top:4px}
+.stage-tag .no{font-size:56px;font-weight:800;line-height:1;color:var(--accent);letter-spacing:-.04em}
+.stage-tag .when{font-size:15px;font-weight:800}
+.stage-tag .tool{font-size:13px;font-weight:700;color:var(--sub);border:1.5px solid var(--rule);padding:2px 8px}
+.pts{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:12px}
+.pts li{display:grid;grid-template-columns:150px 1fr;gap:16px;border-top:1.5px solid var(--rule);padding-top:12px}
+.pts li:first-child{border-top:2px solid var(--ink)}
+.pts b{font-size:15.5px;font-weight:800}
+.pts span{font-size:15px}
+@container (max-width:700px){.pts li{grid-template-columns:1fr;gap:4px}}
+/* 흐름 행 */
+.flows{display:grid;gap:8px;margin-top:6px}
+.frow2{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center;border:2px solid var(--rule);padding:8px 10px;cursor:pointer;background:var(--bg);text-align:left;font:inherit;color:inherit;transition:border-color .2s,background .2s}
+.frow2:hover{border-color:var(--ink)}
+.frow2[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.frow2 .lab b{display:block;font-size:14px;font-weight:800}
+.frow2 .lab span{font-size:12px;color:var(--sub);font-weight:700}
+.frow2 .chain{display:flex;flex-wrap:wrap;align-items:center;gap:4px 0}
+.frow2 .chain i{font-style:normal;border:1.5px solid var(--ink);background:var(--bg);font-size:12px;font-weight:700;padding:3px 7px;white-space:nowrap}
+.frow2 .chain i.h{background:var(--ink);color:#fff}
+.frow2 .chain i.r{border-color:var(--accent);color:var(--accent)}
+.frow2 .chain em{font-style:normal;color:var(--sub);font-weight:800;padding:0 4px;font-size:12px}
+.flow-say{margin-top:12px;border-left:4px solid var(--accent);padding:6px 14px;min-height:3.2em;font-weight:600;font-size:15px}
+@container (max-width:760px){.frow2{grid-template-columns:1fr}}
+/* 교훈 */
+.les{display:grid;gap:0;margin-top:18px;border-top:3px solid var(--ink)}
+.les > div{display:grid;grid-template-columns:54px 250px 1fr;gap:16px;align-items:baseline;border-bottom:1.5px solid var(--rule);padding:12px 0}
+.les .n{font-size:30px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-.03em}
+.les b{font-size:16px;font-weight:800;line-height:1.4}
+.les p{margin:0;font-size:14px;line-height:1.6}
+@container (max-width:760px){.les > div{grid-template-columns:44px 1fr}.les p{grid-column:2}}
+/* 커밋 메시지 비교 */
+.cm{display:grid;grid-template-columns:1fr 1.3fr;gap:0;border:3px solid var(--ink);margin-top:22px}
+.cm > div{padding:18px 22px}
+.cm > div + div{border-left:3px solid var(--ink)}
+.cm h4{margin:0 0 10px;font-size:17px;font-weight:800}
+.cm pre{white-space:pre-wrap;font-family:var(--mono);font-size:13.5px;background:var(--soft);padding:12px 14px;margin:0;line-height:1.6;border-left:4px solid var(--ink)}
+.cm .new pre{border-left-color:var(--accent)}
+.cm .k{color:var(--accent);font-weight:700}
+@container (max-width:760px){.cm{grid-template-columns:1fr}.cm > div + div{border-left:0;border-top:3px solid var(--ink)}}
+.models{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.models span{border:2px solid var(--ink);padding:4px 10px;font-size:13px;font-weight:800}
+.models span small{font-weight:600;color:var(--sub);margin-left:6px}
+.preview{border:3px dashed var(--ink);padding:16px 20px;margin-top:20px;display:grid;grid-template-columns:120px 1fr;gap:14px}
+.preview b{font-size:18px}
+.preview p{margin:0}
+</style>
 </head>
 <body>
 <header class="topbar">
@@ -26,18 +85,285 @@
       <a href="../">코스 홈</a>
       <a href="../week1/">1주차</a>
       <a href="../week2/">2주차</a>
-      <a href="../week3/" class="locked" aria-current="page">3주차</a>
+      <a href="./" aria-current="page">3주차</a>
     </nav>
   </div>
+  <nav class="secnav" aria-label="장 이동">
+    <div class="wrap" id="secnav">
+      <a href="#cover"><b>··</b>표지</a>
+      <a href="#summary"><b>00</b>요약</a>
+      <a href="#overview"><b>01</b>한눈에</a>
+      <a href="#stages"><b>02</b>다섯 단계</a>
+      <a href="#flows"><b>03</b>흐름의 변화</a>
+      <a href="#lessons"><b>04</b>교훈</a>
+      <a href="#commits"><b>05</b>커밋 메시지</a>
+      <a href="#numbers"><b>06</b>숫자</a>
+      <a href="#conclusion"><b>07</b>결론</a>
+    </div>
+  </nav>
+  <div class="readbar"></div>
 </header>
+
 <main class="wrap">
-  <section class="hero">
-    <span class="tag line">WEEK 03 · 공개 예정</span>
-    <h1>3주차 강의는<br>아직 열리지 않았다</h1>
-    <div class="lockbox"><b>WEEK 03</b><p>강의 당일 이 페이지에 자료와 애니메이션이 올라온다. 그 전까지 1주차를 복습해 두자.</p></div>
-    <div class="btns"><a class="btn primary" href="../week1/">1주차 강의로 →</a><a class="btn" href="../">코스 홈</a></div>
+  <!-- 표지 -->
+  <section class="hero" id="cover" data-name="표지">
+    <div class="rv"><span class="tag line">WEEK 03 · 바이브코딩 · 에이전트 운영 · 기준일 2026. 11. 08</span></div>
+    <h1 class="rv">신영환의<br>바이브코딩 역사</h1>
+    <div class="slab rv">
+      <b>바이브코딩 10개월 · 커밋 1,425개로 본 2026년</b>
+      <p>바뀐 것은 코드를 쓰는 손이 아니라<br>에이전트의 결과를 믿기 전에 무엇을 확인하느냐였다</p>
+    </div>
+    <p class="note rv">9개 저장소의 커밋을 본문까지 읽고 정리 · 공동 작성자 표시가 없는 커밋의 도구는 추정 · xreal-cv-ai-agent-community 3주차</p>
+    <div class="btns rv">
+      <a class="btn primary" href="#summary">강의 시작 →</a>
+      <a class="btn" href="../week2/">2주차 복습</a>
+    </div>
+  </section>
+
+  <!-- 요약 -->
+  <section class="sec" id="summary" data-name="요약">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">요약</span><span>이 강의의 줄기</span></div>
+      <h2>사람은 코드를 쓰는 쪽에서 검토하고 거부권을 쥐는 쪽으로 옮겨 갔다</h2>
+    </div>
+    <div class="panel thick rv" style="margin-top:22px">
+      <p style="margin:0;font-size:16.5px">2월에는 GitHub 웹에 파일을 끌어다 올렸다. 10월에는 클라우드 에이전트가 하루 134개 커밋을 쌓았고, 사람은 검토와 거부권을 쥐는 쪽으로 옮겨 갔다. 그 사이 10개월 동안 바뀐 것은 코드를 쓰는 손이 아니라 <b>에이전트가 만든 결과를 믿기 전에 무엇을 확인하느냐</b>였다.</p>
+    </div>
+    <div class="grid g3">
+      <div class="stat rv"><div class="big"><span data-count="1425">1,425</span></div><h4>커밋 (봇 제외)</h4><p>2026. 1. 1 ~ 11. 8, 신영환이 주도한 9개 저장소</p></div>
+      <div class="stat rv"><div class="big"><span data-count="567">567</span></div><h4>10월 한 달 커밋</h4><p>1년 중 최다. 그중 321개가 Social Robot Archive</p></div>
+      <div class="stat rv"><div class="big sm">1 → <span style="color:var(--accent)">469</span></div><h4>CLAUDE.md 줄 수</h4><p>1Day 4HCI, 3월 → 11월. 늘어난 줄 대부분이 사고 뒤에 적은 규칙</p></div>
+    </div>
+    <div class="redline rv"><b>2주차와 연결</b><p>2주차는 판단을 맡는 모델과 그 둘레의 하네스(권한, 검증, 사람의 승인)를 다뤘다. 3주차는 한 사람이 10개월 동안 실제로 그 하네스를 하나씩 만들어 간 기록이다.</p></div>
+  </section>
+
+  <!-- 01 한눈에 -->
+  <section class="sec" id="overview" data-name="한눈에">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">01 한눈에</span><span>10개월, 다섯 시기</span></div>
+      <h2>도구가 바뀔 때마다 일하는 방식이 한 단계씩 옮겨 갔다</h2>
+      <p>시기를 누르면 그 단계의 슬라이드로 간다.</p>
+    </div>
+    <div class="tscroll rv"><table class="tbl sm">
+      <thead><tr><th>시기</th><th>주로 쓴 도구</th><th>무엇을 만들었나</th><th>일하는 방식</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#stages">2월 ~ 3월 초</a></td><td>없음 (웹 업로드·손 편집)</td><td>포트폴리오 첫 버전</td><td>GitHub 웹에 "Add files via upload" 50번</td></tr>
+        <tr><td><a href="#stages-2">3월 ~ 5월</a></td><td>Claude Opus 4.6 → 4.7 → 4.8</td><td>뉴스레터 4종, 연구실 사이트, 평가 도구</td><td>만들어 보고 마음에 안 들면 갈아엎기. 테스트 없음</td></tr>
+        <tr><td><a href="#stages-3">6월 ~ 8월</a></td><td>Claude Fable 5, Opus 4.8, Cursor(공동 작업자)</td><td>1Day 4HCI로 재출발, Cloudflare 이전</td><td>사고가 날 때마다 규칙을 문서에 적기 시작</td></tr>
+        <tr><td><a href="#stages-4">9월</a></td><td>Codex(추정), Opus 5.5</td><td>첫 테스트와 CI, 예외만 알리는 운영</td><td>"정상이면 조용히, 이상만 알린다"</td></tr>
+        <tr style="background:var(--accent-soft)"><td><a href="#stages-5">10월 ~ 11월</a></td><td>Claude Opus 5.5 (로컬 + 클라우드 세션)</td><td>Social Robot Archive, SophyBARA, 맥 없는 발송</td><td>에이전트가 PR을 쌓고, 사람은 독립 검토와 승인</td></tr>
+      </tbody>
+    </table></div>
+    <div class="redline rv"><b>읽는 법</b><p>도구는 커밋 끝의 <code>Co-Authored-By</code>로 알아냈다. 공동 작성자 표시가 없는 9월 커밋 일부는 브랜치 이름과 <code>AGENTS.md</code>로 보아 Codex로 추정한 것이다.</p></div>
+  </section>
+
+  <!-- 02 다섯 단계 -->
+  <section class="sec" id="stages" data-name="다섯 단계">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 다섯 단계</span><span>1단계 · 손으로 올리던 시기</span></div>
+      <h2>처음에는 코드를 고친다기보다 결과 파일을 옮겨 놓았다</h2>
+    </div>
+    <div class="stage-tag rv"><span class="no">01</span><span class="when">2월 ~ 3월 초</span><span class="tool">AI 공동 작성자 없음</span></div>
+    <ul class="pts rv">
+      <li><b>웹 편집기로 올렸다</b><span>포트폴리오의 첫 104개 커밋에는 AI 공동 작성자가 없다. 작성자는 대부분 GitHub 웹 편집기였다.</span></li>
+      <li><b>배포를 더듬었다</b><span>첫날에만 배포 워크플로를 몇 번씩 만들고 지웠다.</span></li>
+      <li><b>이 시기의 일</b><span>코드를 이해하고 고친다기보다 <b>결과 파일을 옮겨 놓는 작업</b>에 가까웠다.</span></li>
+    </ul>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 다섯 단계</span><span>2단계 · Opus 4.6과 폭발</span></div>
+      <h2>만들어 보고 판단했고, 검증은 눈으로 했다</h2>
+    </div>
+    <div class="stage-tag rv"><span class="no">02</span><span class="when">3월 7일 ~ 5월</span><span class="tool">Claude Opus 4.6 → 4.8</span></div>
+    <ul class="pts rv">
+      <li><b>4월 커밋 327개</b><span>2주 만에 HCI·디지털헬스·LM·주말판 뉴스레터 4종과 수집·승인·발송 파이프라인이 생겼다.</span></li>
+      <li><b>만들어 보고 갈아엎기</b><span>포트폴리오는 4월 21일 하루에 터미널 UI, 에디토리얼, Windows 95 화면을 차례로 올렸다가 되돌렸다. 3월부터 4월 21일 사이 큰 리디자인이 9번이었다.</span></li>
+      <li><b>검증은 눈으로</b><span>테스트 파일은 없었다. 에이전트에게 Critical/Major/Minor로 나눈 QA 목록을 받아 한꺼번에 고쳤다.</span></li>
+      <li><b>첫 운영 원칙</b><span>4월 13일, 예약 작업이 밀리거나 돌지 않자 수집과 git push를 맥의 PM2 한 곳으로 몰았다("only PM2 pushes to git"). 같은 날 <code>CLAUDE.md</code>를 아키텍처 문서로 키웠다.</span></li>
+    </ul>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 다섯 단계</span><span>3단계 · 멈춤과 재출발</span></div>
+      <h2>사고가 날 때마다 "그게 맞나"를 먼저 묻는 장치가 생겼다</h2>
+    </div>
+    <div class="stage-tag rv"><span class="no">03</span><span class="when">6월 ~ 8월</span><span class="tool">Claude Fable 5 · Opus 4.8 · Cursor(공동 작업자)</span></div>
+    <ul class="pts rv">
+      <li><b>멈춤</b><span>6월 커밋은 17개. 뉴스레터는 5월 31일에 멈췄고, 그사이 운영 Redis DB가 비활성으로 삭제되어 구독자 정보가 사라졌다.</span></li>
+      <li><b>재출발</b><span>7월 2일 1Day 4HCI로 다시 시작했다. HCI 하나에 하루 4편, PDF 전문을 읽고 쓰는 리뷰, Vercel에서 Cloudflare로 이전, 구독자 0명부터.</span></li>
+      <li><b>"그 논문이 맞나"</b><span>다른 논문의 PDF가 섞이고, 제목만 보고 쓴 리뷰에 지어낸 수치가 들어갔다(7/5). 그래서 논문 정체성 검증, 제목만으로 쓰는 리뷰 금지, 리뷰 속 숫자를 원문과 대조하는 자동 검사가 들어왔다.</span></li>
+      <li><b>승인은 숫자로 줄였다</b><span>"승인 클릭을 놓쳐 미발송 3회, 사람이 승인 단계에서 거른 사례 0회"라는 실측으로 자동 승인을 다시 들였다.</span></li>
+      <li><b>조용한 실패</b><span>메일 API가 오류를 던지지 않고 돌려주는데 호출부 6곳이 모두 무시하고 있었다(7/25).</span></li>
+    </ul>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 다섯 단계</span><span>4단계 · 테스트와 예외만 알리기</span></div>
+      <h2>사람의 주의를 예외에만 쓰도록 바꿨다</h2>
+    </div>
+    <div class="stage-tag rv"><span class="no">04</span><span class="when">9월</span><span class="tool">Codex(추정) · Opus 5.5</span></div>
+    <ul class="pts rv">
+      <li><b>첫 테스트와 CI</b><span>9월 7일 1Day 4HCI에 첫 테스트 파일과 CI가 생겼다. 6개월 동안 "드라이런으로 검증" 같은 말은 커밋 본문에만 있었다.</span></li>
+      <li><b>정상이면 조용히</b><span>9월 22일, 매일 받던 전체 미리보기 메일을 끊었다. 리뷰 8건이 모두 정상이면 메일이 오지 않는다.</span></li>
+      <li><b>글은 Notion에서</b><span>포트폴리오는 Notion을 CMS로 삼았다. 이때부터 글 수정은 커밋이 아니라 Notion 편집이 됐다.</span></li>
+    </ul>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">02 다섯 단계</span><span>5단계 · Opus 5.5와 에이전트에게 맡기는 규모</span></div>
+      <h2>에이전트가 PR을 쌓자 검토가 더 독립적이어야 했다</h2>
+    </div>
+    <div class="stage-tag rv"><span class="no">05</span><span class="when">9월 말 ~ 11월</span><span class="tool">Claude Opus 5.5 · 로컬 + 클라우드 세션</span></div>
+    <ul class="pts rv">
+      <li><b>10월 커밋 567개</b><span>Social Robot Archive 커밋의 약 77%(264개)를 클라우드 세션이 썼다. 10월 17~19일 사흘 동안 256개 커밋, PR 40개.</span></li>
+      <li><b>속도가 낸 사고</b><span>10월 18일, 검토하지 않은 클라우드 커밋 약 40개가 PR에 섞인 채 병합됐다. 이후 에이전트가 쓴 커밋은 병합·배포 전에 <b>독립 검토 에이전트 6개</b>가 따로 본다.</span></li>
+      <li><b>첫날부터 갖추기</b><span>SophyBARA는 첫날부터 테스트·CI·배포를 갖췄고, 연구 기록 기능은 "IRB 승인 전에는 켜지 말 것" 스위치 뒤에 숨겼다.</span></li>
+      <li><b>비용이 설계를 바꿈</b><span>GitHub Actions 사용 시간이 바닥나자 검사를 push 직전 로컬 훅으로 옮기고, 포트폴리오는 CI를 없앴다.</span></li>
+      <li><b>맥이 꺼져도 발송</b><span>1년치 호를 미리 만들어 두고, 11월 3일부터는 클라우드가 매일 20:25에 먼저 승인한다. 맥을 꺼 둔 11월 5~7일에도 매일 07:00에 발송됐다.</span></li>
+    </ul>
+  </section>
+
+  <!-- 03 흐름의 변화 -->
+  <section class="sec" id="flows" data-name="흐름의 변화">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 흐름의 변화</span><span>1Day 4HCI · 매일 메일이 나가는 길</span></div>
+      <h2>사람이 눌러야 나가던 메일이, 사람이 말려야 멈추는 메일이 됐다</h2>
+    </div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">흐름</span><strong>다섯 시기의 발송 경로</strong><span class="hint">행을 누르면 설명이 바뀐다</span></div>
+      <div class="demo-b">
+        <div class="flows" id="mailFlows"></div>
+        <p class="flow-say" id="mailSay" aria-live="polite"></p>
+      </div>
+      <div class="demo-f">검은 칸은 사람이 하는 일, 빨간 칸은 검증·점검 단계다.</div>
+    </div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">03 흐름의 변화</span><span>Social Robot Archive · 에이전트 결과가 운영 DB에 들어가는 길</span></div>
+      <h2>main에 바로 넣던 것이, 독립 검토와 단계 배포를 거치게 됐다</h2>
+    </div>
+    <div class="demo rv">
+      <div class="demo-h"><span class="tag">흐름</span><strong>세 시기와 하반기의 작은 프로젝트</strong><span class="hint">행을 누르면 설명이 바뀐다</span></div>
+      <div class="demo-b">
+        <div class="flows" id="sraFlows"></div>
+        <p class="flow-say" id="sraSay" aria-live="polite"></p>
+      </div>
+      <div class="demo-f">검은 칸은 사람이 하는 일, 빨간 칸은 검토·검증 단계다.</div>
+    </div>
+  </section>
+
+  <!-- 04 교훈 -->
+  <section class="sec" id="lessons" data-name="교훈">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 교훈</span><span>열 가지 중 1~5</span></div>
+      <h2>에이전트가 빨라질수록 검증은 더 독립적이어야 했다</h2>
+    </div>
+    <div class="les rv">
+      <div><span class="n">1</span><b>에이전트의 결과는 검증된 뒤에만 운영에 들어간다</b><p>지어낸 숫자, 다른 논문의 PDF, 근거 없는 로봇 가격, 검토 안 된 커밋 40개 병합. 그래서 원문 대조, 교차 검토, 독립 검토 에이전트가 생겼다.</p></div>
+      <div><span class="n">2</span><b>가장 위험한 건 조용한 실패다</b><p>메일 오류를 무시한 코드, 2주 동안 아무것도 못 잡은 경보, 두 달간 구독 0건이던 위젯. 모두 점검하다가 발견했다. 이후 "실패하면 반드시 메일 한 통"이 기본값이 됐다.</p></div>
+      <div><span class="n">3</span><b>한 곳이 멈추면 다 멈추는 구조를 하나씩 없앴다</b><p>맥이 잠들면 수집이 멈췄고, Redis 하나가 지워지자 구독자가 사라졌다. 그래서 클라우드 승인과 원장, 일일 백업으로 바꿨다.</p></div>
+      <div><span class="n">4</span><b>비용과 무료 한도는 기능이 아니라 설계 조건이다</b><p>무료 프로젝트 일시 중지, 크레딧 소진, macOS 러너 10배 과금. 매번 "무료이면서 꺼지지 않는" 쪽으로 옮겨 Cloudflare로 모였다.</p></div>
+      <div><span class="n">5</span><b>사람의 승인은 줄이되 거부권은 남긴다</b><p>매번 클릭해야 나가는 구조는 바쁜 날 그냥 멈췄다. 기본은 자동 승인, 22:00 미리보기의 "발송 취소"와 보류만 사람 몫으로 남겼다.</p></div>
+    </div>
+
+    <div class="brk"></div>
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">04 교훈</span><span>열 가지 중 6~10</span></div>
+      <h2>규칙은 사고 직후에 적고, 결정은 측정으로 한다</h2>
+    </div>
+    <div class="les rv">
+      <div><span class="n">6</span><b>규칙은 사고 직후에 날짜와 함께 적는다</b><p><code>CLAUDE.md</code>는 3월 1줄에서 469줄이 됐다. 대부분 "이건 되돌리지 말 것, 그날 이런 일이 있었다"이다. 에이전트는 매번 새로 시작하므로 기억은 문서에 남겨야 했다.</p></div>
+      <div><span class="n">7</span><b>취향이 아니라 측정으로 결정한다</b><p>6개월 버틴 Windows 95 화면은 8일간 요청 33건 대 홈 588건이라는 숫자로 지웠다. "첫 화면이 늦다"는 느낌은 LCP 2.9초라는 측정이 되었고, 124ms로 고쳤다.</p></div>
+      <div><span class="n">8</span><b>무엇을 원하는지 먼저 정하는 게 가장 큰 절약이다</b><p>상반기의 리디자인 9번과 하루 세 번의 되돌리기는 "만들어 보고 정하기"의 비용이었다. 하반기에는 디자인 변동이 눈에 띄게 줄었다.</p></div>
+      <div><span class="n">9</span><b>운영 데이터는 기본이 읽기 전용이다</b><p>드라이런과 본인에게만 보내는 테스트 발송, 백업 → dry-run → 적용 → 재현 확인. "말하기 전까지 읽기만"은 에이전트에게 매번 다시 주는 첫 문장이 됐다.</p></div>
+      <div><span class="n">10</span><b>연구윤리는 코드 구조로 지킨다</b><p>평가자에게 모델 이름을 숨기는 화면, 블라인드 표본, IRB 전에는 꺼 둔 기록 스위치. 지키라고 부탁하는 대신 지킬 수밖에 없게 만들었다.</p></div>
+    </div>
+  </section>
+
+  <!-- 05 커밋 메시지 -->
+  <section class="sec" id="commits" data-name="커밋 메시지">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">05 커밋 메시지</span><span>커밋 메시지도 바뀌었다</span></div>
+      <h2>커밋 로그가 사고 기록이자 다음 에이전트를 위한 인수인계 문서가 됐다</h2>
+    </div>
+    <div class="cm rv">
+      <div><h4>상반기 · 무엇을 바꿨는지만</h4>
+        <pre>feat: 버튼 색 변경
+fix: 200ms</pre></div>
+      <div class="new"><h4>10월 이후 · 이유와 확인 범위까지</h4>
+        <pre>무엇을 바꿨나
+<span class="k">왜</span> 바꿨나 · 원인이 무엇이었나
+<span class="k">Checked:</span> 확인한 범위
+<span class="k">아직 확인 못 한 것</span>
+  "A real answer is still to be checked after deploy"</pre></div>
+    </div>
+    <p class="cap rv">오른쪽은 Opus 5.5 커밋이 담는 항목을 정리한 형식이고, 따옴표 안 문장은 실제 커밋에서 옮겼다.</p>
+    <div class="redline rv"><b>쓸모</b><p>이 강의의 근거를 모을 수 있었던 것도 커밋 본문에 이유와 확인 범위가 적혀 있었기 때문이다.</p></div>
+  </section>
+
+  <!-- 06 숫자 -->
+  <section class="sec" id="numbers" data-name="숫자">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">06 숫자</span><span>저장소별 커밋</span></div>
+      <h2>9개 저장소, 커밋 1,425개</h2>
+    </div>
+    <div class="tscroll rv"><table class="tbl sm">
+      <thead><tr><th>저장소</th><th>무엇</th><th>기간</th><th>커밋 (봇 제외)</th><th>주로 함께 쓴 모델</th></tr></thead>
+      <tbody>
+        <tr><td>포트폴리오</td><td>yhshinsimon.com</td><td>2/21 ~ 11/4</td><td>451</td><td>없음 → Opus 4.6 → 4.8 → 5.5</td></tr>
+        <tr><td>Social Robot Archive</td><td>소셜로봇 제품·연구 아카이브</td><td>8/11 ~ 11/1</td><td>366</td><td>Cursor → Opus 5.5 클라우드 세션</td></tr>
+        <tr><td>1Day 4HCI</td><td>매일 HCI 논문 4편 리뷰 뉴스레터</td><td>3/27 ~ 11/8</td><td>336 (+ 데이터 봇 497)</td><td>Opus 4.6 → Fable 5 → Opus 5.5</td></tr>
+        <tr><td>Virtual Dojo Lab</td><td>연구실 사이트</td><td>3/7 ~ 7/4</td><td>113</td><td>Opus 4.6 → 4.8</td></tr>
+        <tr><td>SophyBARA</td><td>철학자 AI 대화 연구 플랫폼</td><td>10/2 ~ 11/1</td><td>110</td><td>Opus 5.5</td></tr>
+        <tr><td>그 밖의 4개</td><td>PACAT 평가 도구, 대화행동 실험, arXiv 봇, 제스처 내비게이터</td><td>4월 ~ 10월</td><td>49</td><td>Opus 4.6 → 5.5, Codex(추정)</td></tr>
+        <tr style="background:var(--accent-soft)"><td>합계</td><td></td><td></td><td>1,425</td><td></td></tr>
+      </tbody>
+    </table></div>
+    <div class="models rv"><span>Opus 4.6<small>3/7</small></span><span>1M 컨텍스트<small>3/21</small></span><span>Opus 4.7<small>5/22</small></span><span>Opus 4.8<small>5/31</small></span><span>Fable 5<small>7/2</small></span><span>Opus 5.5<small>9/26</small></span></div>
+    <p class="cap rv">모델이 커밋에 처음 등장한 날. 포트폴리오에서 명시적으로 되돌린 커밋은 7번(그중 6번이 4월)이다.</p>
+  </section>
+
+  <!-- 07 결론 -->
+  <section class="sec concl" id="conclusion" data-name="결론">
+    <div class="sec-head rv">
+      <div class="eyebrow"><span class="tag">결론</span><span>3주차 정리 · 남은 숙제</span></div>
+      <h2>에이전트가 쓰는 속도가 빨라질수록, 사람의 일은 확인과 거부권으로 옮겨 간다</h2>
+    </div>
+    <div class="grid g3">
+      <div class="panel rv"><span class="n">1</span><h3>실제 기기 검증은 사람 몫</h3><p style="margin:0">실제 iPhone과 트랙패드의 감각은 에이전트가 확인하지 못한다.</p></div>
+      <div class="panel rv"><span class="n">2</span><h3>CI를 줄인 대가</h3><p style="margin:0">포트폴리오에서 Firefox 검사가 빠졌고, 품질은 이제 push 직전 로컬 검사에 달려 있다.</p></div>
+      <div class="panel rv"><span class="n">3</span><h3>검토 부담은 사람에게</h3><p style="margin:0">에이전트가 하루 100개 넘게 커밋하는 날, 마지막으로 병합 버튼을 누르는 사람이 무엇을 확인했는지가 품질을 정한다.</p></div>
+    </div>
+    <div class="preview rv"><b>3주 정리</b><p>1주차는 모델이 능력을 쌓은 과정, 2주차는 판단을 맡는 모델과 하네스, 3주차는 그 하네스를 한 사람이 10개월 동안 직접 만들어 간 기록이었다.</p></div>
+    <div class="btns rv">
+      <a class="btn primary" href="../">코스 홈으로</a>
+      <a class="btn" href="../week1/">1주차</a>
+      <a class="btn" href="../week2/">2주차</a>
+    </div>
   </section>
 </main>
-<footer class="foot"><div class="wrap"><p><strong>XREAL CV · AI Agent Community</strong> · <span class="domain">qnftk020.github.io/xreal-cv-ai-agent-community</span></p></div></footer>
+<span class="zoom-note" id="zoomNote"></span>
+
+<nav class="pager" id="pager" aria-label="페이지 넘기기">
+  <div class="wrap">
+    <button class="pg-btn" id="pgPrev" type="button"><span class="k">←</span><span class="t"><small>이전</small><b id="pgPrevName"></b></span></button>
+    <div class="pg-mid"><div class="pg-count"><b id="pgNum">01</b> / <span id="pgTot">01</span> · <span id="pgName"></span></div><div class="pg-dots" id="pgDots"></div></div>
+    <button class="pg-btn next" id="pgNext" type="button"><span class="t"><small>다음</small><b id="pgNextName"></b></span><span class="k">→</span></button>
+  </div>
+</nav>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><strong>XREAL CV · AI Agent Community</strong> · <span class="domain">qnftk020.github.io/xreal-cv-ai-agent-community</span> · WEEK 03</p>
+    <p>원본: 「바이브코딩 10개월: 커밋 1,425개로 본 신영환의 2026년」 · 기준일 2026. 11. 08. 공동 작성자 표시가 없는 커밋의 도구는 추정이다.</p>
+  </div>
+</footer>
+
+<script src="../assets/common.js"></script>
+<script>window.DECK_PLACE = {};</script>
+<script src="../assets/deck.js"></script>
+<script src="week3.js"></script>
 </body>
 </html>
